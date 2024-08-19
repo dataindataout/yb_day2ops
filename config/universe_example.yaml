@@ -1,0 +1,3 @@
+XCLUSTER_SOURCE: "source-universe-name"
+XCLUSTER_TARGET: "target-universe-name"
+REPLICATE_DATABASE_NAMES: { "database-name" }
