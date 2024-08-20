@@ -102,6 +102,50 @@ def _get_task_status(customer_uuid: str, task_uuid: str) -> json:
     ).json()
 
 
+def _get_all_ysql_tables_list(
+    customer_uuid: str,
+    universe_uuid: str,
+    table_type="PGSQL_TABLE_TYPE",
+    include_parent_table_info=False,
+    only_supported_for_xcluster=True,
+    dbs_include_list=None,
+):
+    """
+    Returns a list of YSQL tables for a given Universe possibly filtered by type and if it is supported by xCluster.
+
+    See also:
+     - https://api-docs.yugabyte.com/docs/yugabyte-platform/d00ca6d91e3aa-list-all-tables
+     - https://api-docs.yugabyte.com/docs/yugabyte-platform/2419074f53925-table-info-resp
+
+    :param customer_uuid: str - the Customer UUID
+    :param universe_uuid: str - the Universe UUID
+    :param table_type: str - the type of tables to return
+    :param include_parent_table_info: bool - whether to include the parent table information
+    :param only_supported_for_xcluster: bool - whether to only include XCluster tables
+    :param dbs_include_list: list<str> - list of database names to include (filter out any not matching); default None
+    :return: json array of TableInfoResp (possibly filtered)
+    """
+    response = requests.get(
+        url=(
+            f"{auth_config['YBA_URL']}/api/v1/customers/{customer_uuid}/universes/{universe_uuid}/tables"
+            f"?includeParentTableInfo={str(include_parent_table_info).lower()}"
+            f"&onlySupportedForXCluster={str(only_supported_for_xcluster).lower()}"
+        ),
+        headers=auth_config["API_HEADERS"],
+    ).json()
+
+    if dbs_include_list is None:
+        return list(filter(lambda t: t["tableType"] == table_type, response))
+    else:
+        return list(
+            filter(
+                lambda t: t["tableType"] == table_type
+                and t["keySpace"] in dbs_include_list,
+                response,
+            )
+        )
+
+
 def _get_xcluster_configs(customer_uuid, xcluster_config_uuid):
     """
     Basic function that gets the xCluster configration data for a given xCluster config UUID from YBA.
