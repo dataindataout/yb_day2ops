@@ -19,6 +19,7 @@ from xclusterdr.manage_dr_cluster import (
     add_tables_to_xcluster_dr,
     pause_xcluster,
     resume_xcluster,
+    perform_xcluster_dr_switchover,
 )
 
 suppress_warnings()
@@ -212,6 +213,28 @@ def do_add_tables_to_dr(
         )
     else:
         print("Please provide table IDs. Operation cancelled.")
+
+
+@app.command("do-switchover", rich_help_panel="xCluster DR Replication Utilities")
+def do_switchover(
+    force: Annotated[
+        bool,
+        typer.Option(
+            prompt="Are you sure you want to switchover the replication for these clusters?"
+        ),
+    ],
+    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    xcluster_source_name: Annotated[
+        str, typer.Argument(default_factory=get_xcluster_source_name)
+    ],
+):
+    """
+    Switchover the running xcluster replication
+    """
+    if force:
+        return perform_xcluster_dr_switchover(customer_uuid, xcluster_source_name)
+    else:
+        print("Operation cancelled")
 
 
 ## the app callback
