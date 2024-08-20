@@ -267,3 +267,43 @@ def _set_tables_in_dr_config(
         json=disaster_recovery_set_tables_form_data,
         headers=auth_config["API_HEADERS"],
     ).json()
+
+
+def _pause_xcluster_config(customer_uuid: str, xcluster_config_uuid: str):
+    """
+    Pauses the underlying xCluster replication.
+
+    See also:
+     - https://api-docs.yugabyte.com/docs/yugabyte-platform/3d17ffa45a16e-edit-xcluster-config
+     - https://api-docs.yugabyte.com/docs/yugabyte-platform/64d854c13e51b-ybp-task
+
+    :param customer_uuid: str - the Customer UUID
+    :param xcluster_config_uuid: str - the xCluster config UUID to pause
+    :return: json of YBPTask (it may be passed to wait_for_task)
+    """
+    xcluster_replication_edit_form_data = {"status": "Paused"}
+    return requests.put(
+        url=f"{auth_config['YBA_URL']}/api/v1/customers/{customer_uuid}/xcluster_configs/{xcluster_config_uuid}",
+        json=xcluster_replication_edit_form_data,
+        headers=auth_config["API_HEADERS"],
+    ).json()
+
+
+def _resume_xcluster_config(customer_uuid: str, xcluster_config_uuid: str):
+    """
+    Resumes the underlying xCluster replication.
+
+    See also:
+     - https://api-docs.yugabyte.com/docs/yugabyte-platform/3d17ffa45a16e-edit-xcluster-config
+     - https://api-docs.yugabyte.com/docs/yugabyte-platform/64d854c13e51b-ybp-task
+
+    :param customer_uuid: str - the Customer UUID
+    :param xcluster_config_uuid: str - the xCluster config UUID to resume
+    :return: json of YBPTask (it may be passed to wait_for_task)
+    """
+    xcluster_replication_edit_form_data = {"status": "Running"}
+    return requests.put(
+        url=f"{auth_config['YBA_URL']}/api/v1/customers/{customer_uuid}/xcluster_configs/{xcluster_config_uuid}",
+        json=xcluster_replication_edit_form_data,
+        headers=auth_config["API_HEADERS"],
+    ).json()

@@ -8,12 +8,16 @@ from core.internal_rest_apis import (
     _get_xcluster_dr_configs,
     _create_dr_config,
     _set_tables_in_dr_config,
+    _pause_xcluster_config,
+    _resume_xcluster_config,
 )
 from core.get_universe_info import get_universe_uuid_by_name
 from core.manage_tasks import wait_for_task
 
 
-def get_source_xcluster_dr_config(customer_uuid: str, source_universe_name: str):
+def get_source_xcluster_dr_config(
+    customer_uuid: str, source_universe_name: str, key: str
+):
 
     get_source_universe_response = _get_universe_by_name(
         customer_uuid, source_universe_name
@@ -31,6 +35,8 @@ def get_source_xcluster_dr_config(customer_uuid: str, source_universe_name: str)
             raise RuntimeError(
                 f"ERROR: the universe '{source_universe_name}' does not have a DR config."
             )
+        elif key != "all":
+            return _get_xcluster_dr_configs(customer_uuid, dr_config_source_uuid)[key]
         else:
             return _get_xcluster_dr_configs(customer_uuid, dr_config_source_uuid)
 
@@ -52,8 +58,8 @@ def get_xcluster_dr_available_tables(
     all_tables_list = _get_all_ysql_tables_list(customer_uuid, universe_uuid)
 
     xcluster_dr_existing_tables_id = get_source_xcluster_dr_config(
-        customer_uuid, source_universe_name
-    )["tables"]
+        customer_uuid, source_universe_name, "tables"
+    )
 
     # filter out any tables whose ids are not already in the current xcluster dr config
     # additionally filter out index tables,
@@ -180,7 +186,7 @@ def add_tables_to_xcluster_dr(
     :raises RuntimeError: if no tables could be found to add to the xCluster DR config
     """
     xcluster_dr_config = get_source_xcluster_dr_config(
-        customer_uuid, source_universe_name
+        customer_uuid, source_universe_name, "all"
     )
     xcluster_dr_uuid = xcluster_dr_config["uuid"]
     storage_config_uuid = xcluster_dr_config["bootstrapParams"]["backupRequestParams"][
@@ -193,3 +199,23 @@ def add_tables_to_xcluster_dr(
         customer_uuid, xcluster_dr_uuid, storage_config_uuid, merged_dr_tables_list
     )
     return wait_for_task(customer_uuid, resp, "Add tables to xCluster DR")
+
+
+def pause_xcluster(customer_uuid, xcluster_source_name):
+    dr_config = get_source_xcluster_dr_config(
+        customer_uuid, xcluster_source_name, "all"
+    )
+    resp = _pause_xcluster_config(customer_uuid, dr_config["xclusterConfigUuid"])
+    wait_for_task(customer_uuid, resp, "Pause XCluster")
+    print("Replication is paused? ")
+    print(get_source_xcluster_dr_config(customer_uuid, xcluster_source_name, "paused"))
+
+
+def resume_xcluster(customer_uuid, xcluster_source_name):
+    dr_config = get_source_xcluster_dr_config(
+        customer_uuid, xcluster_source_name, "all"
+    )
+    resp = _resume_xcluster_config(customer_uuid, dr_config["xclusterConfigUuid"])
+    wait_for_task(customer_uuid, resp, "Resume XCluster")
+    print("Replication is paused? ")
+    print(get_source_xcluster_dr_config(customer_uuid, xcluster_source_name, "paused"))
