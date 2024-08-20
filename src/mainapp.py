@@ -1,4 +1,6 @@
 import typer
+from typing import List
+
 import yaml
 
 from pathlib import Path
@@ -13,6 +15,8 @@ from includes.overrides import suppress_warnings
 from xclusterdr.manage_dr_cluster import (
     create_xcluster_dr,
     get_source_xcluster_dr_config,
+    get_xcluster_dr_available_tables,
+    add_tables_to_xcluster_dr,
 )
 
 suppress_warnings()
@@ -70,10 +74,30 @@ def get_xcluster_target_uuid():
     return target_universe_uuid
 
 
+def parse_comma_separated_list(value: str) -> List[str]:
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
 # the app commands
 
 
 ## app commands: xcluster dr replication utilities
+
+
+@app.command(
+    "get-unreplicated-tables", rich_help_panel="xCluster DR Replication Utilities"
+)
+def get_xcluster_dr_unreplicated_tables(
+    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    xcluster_source_name: Annotated[
+        str,
+        typer.Argument(default_factory=get_xcluster_source_name),
+    ],
+):
+    """
+    Show tables that have not been added to the xcluster dr replication
+    """
+    print(get_xcluster_dr_available_tables(customer_uuid, xcluster_source_name))
 
 
 @app.command("setup-dr", rich_help_panel="xCluster DR Replication Utilities")
@@ -111,6 +135,31 @@ def get_xcluster_configuration_info(
     Show existing xcluster dr configuration info for the source universe
     """
     pprint(get_source_xcluster_dr_config(customer_uuid, xcluster_source_name))
+
+
+@app.command("do-add-tables-to-dr", rich_help_panel="xCluster DR Replication Utilities")
+def do_add_tables_to_dr(
+    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    xcluster_source_name: Annotated[
+        str, typer.Argument(default_factory=get_xcluster_source_name)
+    ],
+    add_table_ids: Annotated[
+        str,
+        typer.Option(
+            help='Comma-separated list of IDs (example: "id1, id2")',
+            callback=parse_comma_separated_list,
+        ),
+    ],
+):
+    """
+    Add specified unreplicated table to the xCluster DR configuration to be replicated.
+    """
+    if add_table_ids:
+        return add_tables_to_xcluster_dr(
+            customer_uuid, xcluster_source_name, add_table_ids
+        )
+    else:
+        print("Please provide table IDs. Operation cancelled.")
 
 
 ## the app callback
