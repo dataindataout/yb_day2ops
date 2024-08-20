@@ -10,6 +10,7 @@ from core.internal_rest_apis import (
     _set_tables_in_dr_config,
     _pause_xcluster_config,
     _resume_xcluster_config,
+    _switchover_xcluster_dr,
 )
 from core.get_universe_info import get_universe_uuid_by_name
 from core.manage_tasks import wait_for_task
@@ -219,3 +220,28 @@ def resume_xcluster(customer_uuid, xcluster_source_name):
     wait_for_task(customer_uuid, resp, "Resume XCluster")
     print("Replication is paused? ")
     print(get_source_xcluster_dr_config(customer_uuid, xcluster_source_name, "paused"))
+
+
+def perform_xcluster_dr_switchover(
+    customer_uuid: str,
+    source_universe_name: str,
+) -> str:
+    """
+    Performs an xCluster DR switchover (aka a planned switchover).  This effectively changes the direction
+    of the xCluster replication with zero RPO.
+
+    :param customer_uuid: str - the customer uuid
+    :param source_universe_name: str - the name of the source universe
+    :return: resource_uuid: str - the uuid of the resource being removed
+    """
+    dr_config = get_source_xcluster_dr_config(
+        customer_uuid, source_universe_name, "all"
+    )
+    dr_config_uuid = dr_config["uuid"]
+    primary_universe_uuid = dr_config["primaryUniverseUuid"]
+    dr_replica_universe_uuid = dr_config["drReplicaUniverseUuid"]
+
+    resp = _switchover_xcluster_dr(
+        customer_uuid, dr_config_uuid, primary_universe_uuid, dr_replica_universe_uuid
+    )
+    return wait_for_task(customer_uuid, resp, "Switchover XCluster DR")

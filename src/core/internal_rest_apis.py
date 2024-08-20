@@ -307,3 +307,34 @@ def _resume_xcluster_config(customer_uuid: str, xcluster_config_uuid: str):
         json=xcluster_replication_edit_form_data,
         headers=auth_config["API_HEADERS"],
     ).json()
+
+
+def _switchover_xcluster_dr(
+    customer_uuid: str,
+    dr_config_uuid: str,
+    primary_universe_uuid: str,
+    dr_replica_universe_uuid: str,
+):
+    """
+    Initiates an xCluster DR planned switchover.
+
+    See also:
+     - https://api-docs.yugabyte.com/docs/yugabyte-platform/branches/2.20/066dda1e654a3-switchover-a-disaster-recovery-config
+     - https://api-docs.yugabyte.com/docs/yugabyte-platform/64d854c13e51b-ybp-task
+
+    :param customer_uuid: str - the Customer UUID
+    :param dr_config_uuid: str - the DR config UUID to use
+    :param primary_universe_uuid: str - the primary Universe UUID
+    :param dr_replica_universe_uuid: str - the secondary (replica) Universe UUID
+    :return: json of YBPTask (it may be passed to wait_for_task)
+    """
+    disaster_recovery_switchover_form_data = {
+        "primaryUniverseUuid": primary_universe_uuid,
+        "drReplicaUniverseUuid": dr_replica_universe_uuid,
+    }
+
+    return requests.post(
+        url=f"{auth_config['YBA_URL']}/api/v1/customers/{customer_uuid}/dr_configs/{dr_config_uuid}/switchover",
+        json=disaster_recovery_switchover_form_data,
+        headers=auth_config["API_HEADERS"],
+    ).json()
