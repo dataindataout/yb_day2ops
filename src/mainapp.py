@@ -1,7 +1,7 @@
+import yaml
+
 import typer
 from typing import List
-
-import yaml
 
 from pathlib import Path
 from pprint import pprint
@@ -17,6 +17,8 @@ from xclusterdr.manage_dr_cluster import (
     get_source_xcluster_dr_config,
     get_xcluster_dr_available_tables,
     add_tables_to_xcluster_dr,
+    pause_xcluster,
+    resume_xcluster,
 )
 
 suppress_warnings()
@@ -130,11 +132,61 @@ def get_xcluster_configuration_info(
     xcluster_source_name: Annotated[
         str, typer.Argument(default_factory=get_xcluster_source_name)
     ],
+    key: Annotated[
+        str,
+        typer.Option(
+            help="A single key to return the value from the DR config (example: paused)",
+        ),
+    ] = "all",
 ):
     """
-    Show existing xcluster dr configuration info for the source universe
+    Show existing xcluster dr configuration info for the source universe; use --key option to show a single value from the whole config
     """
-    pprint(get_source_xcluster_dr_config(customer_uuid, xcluster_source_name))
+    pprint(get_source_xcluster_dr_config(customer_uuid, xcluster_source_name, key))
+
+
+@app.command("do-pause-xcluster", rich_help_panel="xCluster DR Replication Utilities")
+def do_pause_xcluster(
+    force: Annotated[
+        bool,
+        typer.Option(
+            prompt="Are you sure you want to pause the replication for these clusters?"
+        ),
+    ],
+    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    xcluster_source_name: Annotated[
+        str, typer.Argument(default_factory=get_xcluster_source_name)
+    ],
+):
+    """
+    Pause the running xcluster replication
+    """
+    if force:
+        return pause_xcluster(customer_uuid, xcluster_source_name)
+    else:
+        print("Operation cancelled")
+
+
+@app.command("do-resume-xcluster", rich_help_panel="xCluster DR Replication Utilities")
+def do_resume_xcluster(
+    force: Annotated[
+        bool,
+        typer.Option(
+            prompt="Are you sure you want to resume the replication for these clusters?"
+        ),
+    ],
+    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    xcluster_source_name: Annotated[
+        str, typer.Argument(default_factory=get_xcluster_source_name)
+    ],
+):
+    """
+    Resume the running xcluster replication
+    """
+    if force:
+        return resume_xcluster(customer_uuid, xcluster_source_name)
+    else:
+        print("Operation cancelled")
 
 
 @app.command("do-add-tables-to-dr", rich_help_panel="xCluster DR Replication Utilities")
