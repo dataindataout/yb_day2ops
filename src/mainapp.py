@@ -217,22 +217,28 @@ def do_add_tables_to_dr(
 
 @app.command("do-switchover", rich_help_panel="xCluster DR Replication Utilities")
 def do_switchover(
+    current_primary: Annotated[
+        str,
+        typer.Option(
+            prompt="Please provide the name of the current primary for verification"
+        ),
+    ],
     force: Annotated[
         bool,
         typer.Option(
-            prompt="Are you sure you want to switchover the replication for these clusters?"
+            prompt="You are about to perform a switchover of the primary cluster. Please confirm. "
         ),
     ],
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
-    xcluster_source_name: Annotated[
-        str, typer.Argument(default_factory=get_xcluster_source_name)
-    ],
 ):
     """
-    Switchover the running xcluster replication
+    Switchover the running xcluster replication; requires name of current primary for safety
     """
     if force:
-        return perform_xcluster_dr_switchover(customer_uuid, xcluster_source_name)
+        try:
+            return perform_xcluster_dr_switchover(customer_uuid, current_primary)
+        except RuntimeError as e:
+            print(f"There was a RuntimeError: {e}")
     else:
         print("Operation cancelled")
 
