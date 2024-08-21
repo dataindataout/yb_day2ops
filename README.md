@@ -63,6 +63,7 @@ See closed pull requests for more detail on completed items.
 - [x] Pause and resume replication
 - [x] Switchover (graceful) replication between universes in xCluster DR config
 - [ ] Failover (immediate) replication between universes in xCluster DR config
+- [ ] Repair replication between universes after failover
 - [ ] Observability: replication lag
 - [ ] Observability: safetime
 - [ ] Observability: status (stopped/paused/running)

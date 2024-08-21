@@ -338,3 +338,59 @@ def _switchover_xcluster_dr(
         json=disaster_recovery_switchover_form_data,
         headers=auth_config["API_HEADERS"],
     ).json()
+
+
+def _failover_xcluster_dr(
+    customer_uuid: str,
+    dr_config_uuid: str,
+    primary_universe_uuid: str,
+    dr_replica_universe_uuid: str,
+    namespace_id_safetime_epoch_us_map: dict,
+):
+    """
+    Initiates an xCluster DR fail-over after an "unplanned" failure of the Primary cluster/region.
+
+    NOTE: it is anticipated that, in this failure scenario, it may first require an HA switchover of YBA itself before being able to run this operation. This may also require changing the underlying YBA_URL used if the HA instance is not already behind a load balancer.
+
+    After this operation is successful, the DR Replica becomes the new Primary cluster without an automatic DR
+    configuration. Once the Primary has recovered and is accessible again, run the Restart (Repair) xCluster DR
+    operations and, once completed, optionally do a DR Switchover to return back to the original Primary DR.
+
+    See also:
+     - https://api-docs.yugabyte.com/docs/yugabyte-platform/branches/2.20/a3bcb16787481-failover-a-disaster-recovery-config
+
+    :param customer_uuid: str - the Customer UUID
+    :param dr_config_uuid: str - the DR config UUID to use
+    :param primary_universe_uuid: str - the primary Universe UUID
+    :param dr_replica_universe_uuid: str - the secondary (replica) Universe UUID
+    :param namespace_id_safetime_epoch_us_map: dict<str, int> - the current epoch safetimes for the DR config
+    :return: json of YBPTask (it may be passed to wait_for_task)
+    """
+    disaster_recovery_failover_form_data = {
+        "primaryUniverseUuid": primary_universe_uuid,
+        "drReplicaUniverseUuid": dr_replica_universe_uuid,
+        "namespaceIdSafetimeEpochUsMap": namespace_id_safetime_epoch_us_map,
+    }
+    # pprint(disaster_recovery_failover_form_data)
+    return requests.post(
+        url=f"{auth_config['YBA_URL']}/api/v1/customers/{customer_uuid}/dr_configs/{dr_config_uuid}/failover",
+        json=disaster_recovery_failover_form_data,
+        headers=auth_config["API_HEADERS"],
+    ).json()
+
+
+def _get_xcluster_dr_safetime(customer_uuid: str, dr_config_uuid: str):
+    """
+    Get the xCluster DR config safe times. This information is needed to pass into the _failover_xcluster_dr method.
+
+    See also:
+     - <can't find these docs yet>
+
+    :param customer_uuid: str - the Customer UUID
+    :param dr_config_uuid: str - the DR config UUID to use
+    :return: json<DrConfigSafeTimeResp>
+    """
+    return requests.get(
+        url=f"{auth_config['YBA_URL']}/api/v1/customers/{customer_uuid}/dr_configs/{dr_config_uuid}/safetime",
+        headers=auth_config["API_HEADERS"],
+    ).json()

@@ -11,6 +11,8 @@ from core.internal_rest_apis import (
     _pause_xcluster_config,
     _resume_xcluster_config,
     _switchover_xcluster_dr,
+    _failover_xcluster_dr,
+    _get_xcluster_dr_safetime,
 )
 from core.get_universe_info import get_universe_uuid_by_name
 from core.manage_tasks import wait_for_task
@@ -245,3 +247,36 @@ def perform_xcluster_dr_switchover(
         customer_uuid, dr_config_uuid, primary_universe_uuid, dr_replica_universe_uuid
     )
     return wait_for_task(customer_uuid, resp, "Switchover XCluster DR")
+
+
+def perform_xcluster_dr_failover(customer_uuid: str, source_universe_name: str) -> str:
+    """
+    Performs an xCluster DR failover (aka an unplanned switchover).  This promotes the DR replica to be the Primary. This operation has a small, but non-zero RPO.
+
+    :param customer_uuid: str - the customer uuid
+    :param source_universe_name: str - the name of the source universe
+    :return: resource_uuid: str - the uuid of the resource being failed over to?
+    """
+    dr_config = get_source_xcluster_dr_config(
+        customer_uuid, source_universe_name, "all"
+    )
+
+    dr_config_uuid = dr_config["uuid"]
+    primary_universe_uuid = dr_config["primaryUniverseUuid"]
+    dr_replica_universe_uuid = dr_config["drReplicaUniverseUuid"]
+
+    xcluster_dr_safetimes = _get_xcluster_dr_safetime(customer_uuid, dr_config_uuid)
+
+    safetime_epoch_map = {
+        entry["namespaceId"]: entry["safetimeEpochUs"]
+        for entry in xcluster_dr_safetimes["safetimes"]
+    }
+
+    resp = _failover_xcluster_dr(
+        customer_uuid,
+        dr_config_uuid,
+        primary_universe_uuid,
+        dr_replica_universe_uuid,
+        safetime_epoch_map,
+    )
+    return wait_for_task(customer_uuid, resp, "Failover XCluster DR")
