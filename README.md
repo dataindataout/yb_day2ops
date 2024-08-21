@@ -1,4 +1,4 @@
-# Day 2 Ops for YugabyteDB xCluster DR 
+# Day 2 Ops for YugabyteDB  
 
 The contents of this repository are published as an example of how one might write a module to interact with and automate the YBA xCluster DR APIs. Use common sense and good development practices when testing and preparing to run derivatives of this in your environments.
 
@@ -41,3 +41,41 @@ Typer is the plugin that facilitates running the APIs within a CLI app.
 ### Tabulate
 https://github.com/astanin/python-tabulate
 This is used to display results from API calls in a table. It's a nice-to-have, so feel free to rip it out if you don't ever plan to use the app in an interactive fashion.
+
+## Roadmap
+
+Please submit an issue for any requests for features or relative prioritization.
+
+See closed pull requests for more detail on completed items.
+
+### General 
+- [x] Initial framework
+- [ ] Flag for interactive mode (default non-interactive mode)
+- [ ] Short flag names
+- [ ] Human-readable error handling for interactive mode
+- [ ] Return 0 on successful completion; non-zero on failure for non-interactive mode
+- [ ] All parameters have default values
+- [ ] Flag to redirect output to a log file / general logging 
+- [ ] Add backup location to configuration 
+
+### xCluster DR
+- [x] View and add unreplicated tables
+- [x] Pause and resume replication
+- [x] Switchover (graceful) replication between universes in xCluster DR config
+- [ ] Failover (immediate) replication between universes in xCluster DR config
+- [ ] Observability: replication lag
+- [ ] Observability: safetime
+- [ ] Observability: status (stopped/paused/running)
+- [ ] Observability: current primary
+- [ ] Replication lag every x (configurable) seconds
+- [ ] View replicated tables
+- [ ] Remove tables from replication
+- [ ] Resync database
+
+### DDL wrappers
+- [ ] Add table
+- [ ] Drop table
+- [ ] Alter table
+- [ ] Add/drop/alter index
+- [ ] Add/drop/alter view
+
