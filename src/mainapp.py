@@ -20,6 +20,7 @@ from xclusterdr.manage_dr_cluster import (
     pause_xcluster,
     resume_xcluster,
     perform_xcluster_dr_switchover,
+    perform_xcluster_dr_failover,
 )
 
 suppress_warnings()
@@ -237,6 +238,34 @@ def do_switchover(
     if force:
         try:
             return perform_xcluster_dr_switchover(customer_uuid, current_primary)
+        except RuntimeError as e:
+            print(f"There was a RuntimeError: {e}")
+    else:
+        print("Operation cancelled")
+
+
+@app.command("do-failover", rich_help_panel="xCluster DR Replication Utilities")
+def do_switchover(
+    current_primary: Annotated[
+        str,
+        typer.Option(
+            prompt="Please provide the name of the current primary for verification"
+        ),
+    ],
+    force: Annotated[
+        bool,
+        typer.Option(
+            prompt="You are about to perform an emergency failover to the replica cluster. XCLUSTER REPLICATION BETWEEN PRIMARY AND REPLICA WILL BE STOPPED AFTER THIS UNTIL YOU REPAIR IT. Please confirm. "
+        ),
+    ],
+    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+):
+    """
+    Failover (immediately, emergently, non-gracefully) the running xcluster replication; requires name of current primary for safety
+    """
+    if force:
+        try:
+            return perform_xcluster_dr_failover(customer_uuid, current_primary)
         except RuntimeError as e:
             print(f"There was a RuntimeError: {e}")
     else:
