@@ -5,6 +5,8 @@ The contents of this repository are published as an example of how one might wri
 Prior to using this module, please review the entire xCluster DR documentation, starting here:
  - https://docs.yugabyte.com/preview/yugabyte-platform/back-up-restore-universes/disaster-recovery/
 
+These commands do not affect the synchronous replication happening *within* a universe. They are only used to control the asynchronous DR replication established *between* universes. (A YugabyteDB universe is commonly thought of as a cluster of nodes having distributed data within a region or other fault domain.)
+
 ## Run the CLI app
 
 The CLI app is started by running `python src/mainapp.py`. It is there you can see the available options.
@@ -42,6 +44,7 @@ By default, this will show all of the xCluster DR settings in json. You can use 
 
 `--key paused`: indicates if the replication between universes is paused
 `--key tables`: list of IDs of tables in replication
+`--key tableType`: indicates which API is used for these universes (YCQL or YSQL)
 
 #### xCluster DR management
 
@@ -75,6 +78,11 @@ Show tables that have not been added to the xCluster DR replication. You can the
 Add specified unreplicated table to the xCluster DR configuration to be replicated. 
 
 Before adding tables to the DR config, be sure that (a) the table definition has been created on both the primary and replica, and (b) the tables are empty. If the table definition is not created on both sides, the process will fail. If the tables are not empty, the entire database/keyspace holding those tables will be bootstrapped, and this can take some time.
+
+Pass comma-delimited table IDs found in `get-unreplicated-tables`. All tables in a given database/keyspace must be added at once. For example:
+```
+python src/mainapp.py do-add-tables-to-dr --add-table-ids "00004702000030008000000000004003,00004702000030008000000000004000"
+```
 
 ## Plugins used
 
@@ -113,7 +121,7 @@ See closed pull requests for more detail on completed items.
 - [x] Pause and resume replication
 - [x] Switchover (graceful) replication between universes in xCluster DR config
 - [x] Failover (immediate) replication between universes in xCluster DR config
-- [ ] Repair replication between universes after failover
+- [x] Recover replication between universes after failover
 - [ ] Observability: replication lag
 - [ ] Observability: safetime
 - [ ] Observability: status (stopped/paused/running)

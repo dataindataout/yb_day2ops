@@ -86,26 +86,10 @@ def parse_comma_separated_list(value: str) -> List[str]:
 # the app commands
 
 
-## app commands: xcluster dr replication utilities
+## app commands: xCluster DR replication setup
 
 
-@app.command(
-    "get-unreplicated-tables", rich_help_panel="xCluster DR Replication Utilities"
-)
-def get_xcluster_dr_unreplicated_tables(
-    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
-    xcluster_source_name: Annotated[
-        str,
-        typer.Argument(default_factory=get_xcluster_source_name),
-    ],
-):
-    """
-    Show tables that have not been added to the xcluster dr replication
-    """
-    print(get_xcluster_dr_available_tables(customer_uuid, xcluster_source_name))
-
-
-@app.command("setup-dr", rich_help_panel="xCluster DR Replication Utilities")
+@app.command("setup-dr", rich_help_panel="xCluster DR Replication Setup")
 def create_xluster_dr_configuration(
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
     xcluster_source_name: Annotated[
@@ -119,7 +103,7 @@ def create_xluster_dr_configuration(
     ],
 ):
     """
-    Create an xcluster dr configuration
+    Create an xCluster DR configuration
     """
     create_xcluster_dr(
         customer_uuid,
@@ -129,7 +113,7 @@ def create_xluster_dr_configuration(
     )
 
 
-@app.command("get-dr-config", rich_help_panel="xCluster DR Replication Utilities")
+@app.command("get-dr-config", rich_help_panel="xCluster DR Replication Setup")
 def get_xcluster_configuration_info(
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
     xcluster_source_name: Annotated[
@@ -143,12 +127,15 @@ def get_xcluster_configuration_info(
     ] = "all",
 ):
     """
-    Show existing xcluster dr configuration info for the source universe; use --key option to show a single value from the whole config
+    Show existing xCluster DR configuration info for the source universe
     """
     pprint(get_source_xcluster_dr_config(customer_uuid, xcluster_source_name, key))
 
 
-@app.command("do-pause-xcluster", rich_help_panel="xCluster DR Replication Utilities")
+## app commands: xCluster DR replication management
+
+
+@app.command("do-pause-xcluster", rich_help_panel="xCluster DR Replication Management")
 def do_pause_xcluster(
     force: Annotated[
         bool,
@@ -162,7 +149,7 @@ def do_pause_xcluster(
     ],
 ):
     """
-    Pause the running xcluster replication
+    Pause the running xCluster DR replication
     """
     if force:
         return pause_xcluster(customer_uuid, xcluster_source_name)
@@ -170,7 +157,7 @@ def do_pause_xcluster(
         print("Operation cancelled")
 
 
-@app.command("do-resume-xcluster", rich_help_panel="xCluster DR Replication Utilities")
+@app.command("do-resume-xcluster", rich_help_panel="xCluster DR Replication Management")
 def do_resume_xcluster(
     force: Annotated[
         bool,
@@ -184,7 +171,7 @@ def do_resume_xcluster(
     ],
 ):
     """
-    Resume the running xcluster replication
+    Resume the active xCluster DR replication
     """
     if force:
         return resume_xcluster(customer_uuid, xcluster_source_name)
@@ -192,7 +179,113 @@ def do_resume_xcluster(
         print("Operation cancelled")
 
 
-@app.command("do-add-tables-to-dr", rich_help_panel="xCluster DR Replication Utilities")
+@app.command("do-switchover", rich_help_panel="xCluster DR Replication Management")
+def do_switchover(
+    current_primary: Annotated[
+        str,
+        typer.Option(
+            prompt="Please provide the name of the current primary for verification"
+        ),
+    ],
+    force: Annotated[
+        bool,
+        typer.Option(
+            prompt="You are about to perform a switchover of the primary cluster. Please confirm. "
+        ),
+    ],
+    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+):
+    """
+    Switchover the running xCluster DR replication
+    """
+    if force:
+        try:
+            return perform_xcluster_dr_switchover(customer_uuid, current_primary)
+        except RuntimeError as e:
+            print(f"There was a RuntimeError: {e}")
+    else:
+        print("Operation cancelled")
+
+
+@app.command("do-failover", rich_help_panel="xCluster DR Replication Management")
+def do_failover(
+    current_primary: Annotated[
+        str,
+        typer.Option(
+            prompt="Please provide the name of the current primary for verification"
+        ),
+    ],
+    force: Annotated[
+        bool,
+        typer.Option(
+            prompt="You are about to perform an emergency failover to the replica cluster. XCLUSTER REPLICATION BETWEEN PRIMARY AND REPLICA UNIVERSES WILL BE STOPPED AFTER THIS UNTIL YOU REPAIR IT. Please confirm. "
+        ),
+    ],
+    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+):
+    """
+    Failover (immediately, emergently, non-gracefully) the running xCluster DR replication
+    """
+    if force:
+        try:
+            return perform_xcluster_dr_failover(customer_uuid, current_primary)
+        except RuntimeError as e:
+            print(f"There was a RuntimeError: {e}")
+    else:
+        print("Operation cancelled")
+
+
+@app.command("do-recovery", rich_help_panel="xCluster DR Replication Management")
+def do_recovery(
+    current_primary: Annotated[
+        str,
+        typer.Option(
+            prompt="Please provide the name of the current primary for verification"
+        ),
+    ],
+    force: Annotated[
+        bool,
+        typer.Option(
+            prompt="You are about to perform a recovery on xCluster DR replication previously failed over. This will restore the replication stream. Please confirm. "
+        ),
+    ],
+    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+):
+    """
+    Recovery restores replication that previously had a non-graceful failover
+    """
+    if force:
+        try:
+            return perform_xcluster_dr_recovery(customer_uuid, current_primary)
+        except RuntimeError as e:
+            print(f"There was a RuntimeError: {e}")
+    else:
+        print("Operation cancelled")
+
+
+## app commands: xCluster DR replication table management
+
+
+@app.command(
+    "get-unreplicated-tables",
+    rich_help_panel="xCluster DR Replication Table Management",
+)
+def get_xcluster_dr_unreplicated_tables(
+    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    xcluster_source_name: Annotated[
+        str,
+        typer.Argument(default_factory=get_xcluster_source_name),
+    ],
+):
+    """
+    Show tables that have not been added to the xCluster DR replication
+    """
+    print(get_xcluster_dr_available_tables(customer_uuid, xcluster_source_name))
+
+
+@app.command(
+    "do-add-tables-to-dr", rich_help_panel="xCluster DR Replication Table Management"
+)
 def do_add_tables_to_dr(
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
     xcluster_source_name: Annotated[
@@ -215,90 +308,6 @@ def do_add_tables_to_dr(
         )
     else:
         print("Please provide table IDs. Operation cancelled.")
-
-
-@app.command("do-switchover", rich_help_panel="xCluster DR Replication Utilities")
-def do_switchover(
-    current_primary: Annotated[
-        str,
-        typer.Option(
-            prompt="Please provide the name of the current primary for verification"
-        ),
-    ],
-    force: Annotated[
-        bool,
-        typer.Option(
-            prompt="You are about to perform a switchover of the primary cluster. Please confirm. "
-        ),
-    ],
-    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
-):
-    """
-    Switchover the running xcluster replication; requires name of current primary for safety
-    """
-    if force:
-        try:
-            return perform_xcluster_dr_switchover(customer_uuid, current_primary)
-        except RuntimeError as e:
-            print(f"There was a RuntimeError: {e}")
-    else:
-        print("Operation cancelled")
-
-
-@app.command("do-failover", rich_help_panel="xCluster DR Replication Utilities")
-def do_failover(
-    current_primary: Annotated[
-        str,
-        typer.Option(
-            prompt="Please provide the name of the current primary for verification"
-        ),
-    ],
-    force: Annotated[
-        bool,
-        typer.Option(
-            prompt="You are about to perform an emergency failover to the replica cluster. XCLUSTER REPLICATION BETWEEN PRIMARY AND REPLICA WILL BE STOPPED AFTER THIS UNTIL YOU REPAIR IT. Please confirm. "
-        ),
-    ],
-    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
-):
-    """
-    Failover (immediately, emergently, non-gracefully) the running xcluster replication; requires name of current primary for safety
-    """
-    if force:
-        try:
-            return perform_xcluster_dr_failover(customer_uuid, current_primary)
-        except RuntimeError as e:
-            print(f"There was a RuntimeError: {e}")
-    else:
-        print("Operation cancelled")
-
-
-@app.command("do-recovery", rich_help_panel="xCluster DR Replication Utilities")
-def do_recovery(
-    current_primary: Annotated[
-        str,
-        typer.Option(
-            prompt="Please provide the name of the current primary for verification"
-        ),
-    ],
-    force: Annotated[
-        bool,
-        typer.Option(
-            prompt="You are about to perform a recovery on replication previously failed over. This will restore the replication stream. Please confirm. "
-        ),
-    ],
-    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
-):
-    """
-    Recovery restores replication that previously had a non-graceful failover
-    """
-    if force:
-        try:
-            return perform_xcluster_dr_recovery(customer_uuid, current_primary)
-        except RuntimeError as e:
-            print(f"There was a RuntimeError: {e}")
-    else:
-        print("Operation cancelled")
 
 
 ## the app callback

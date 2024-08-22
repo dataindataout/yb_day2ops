@@ -49,9 +49,7 @@ def get_xcluster_dr_available_tables(
     customer_uuid: str, source_universe_name: str
 ) -> list:
     """
-    For a given universe name, returns a list of database tables not already included in the current xcluster dr config.
-    These are the tables that can be added to the configuration. Ideally, these should have sizeBytes = 0 or including
-    it will trigger a full backup/restore of the existing database (this will slow the process down).
+    For a given universe name, returns a list of database tables not already included in the current xcluster dr config. These are the tables that can be added to the configuration. Ideally, these should have sizeBytes = 0 or it will trigger a full backup/restore of the existing database (this will slow the process down).
 
     :param customer_uuid: str - the customer uuid.
     :param universe_name: str - the name of the universe.
@@ -118,7 +116,7 @@ def create_xcluster_dr(
 
     if len(storage_configs) < 1:
         raise RuntimeError(
-            "WARN: no storage configs found, at least one is required for xCluster DR setup!"
+            "WARN: no storage configs found, at least one is required for xCluster DR setup."
         )
 
     storage_config_uuid = storage_configs[1]["configUUID"]
@@ -230,8 +228,7 @@ def perform_xcluster_dr_switchover(
     source_universe_name: str,
 ) -> str:
     """
-    Performs an xCluster DR switchover (aka a planned switchover).  This effectively changes the direction
-    of the xCluster replication with zero RPO.
+    Performs an xCluster DR switchover (a planned switchover).  This effectively changes the direction of the xCluster replication with zero RPO.
 
     :param customer_uuid: str - the customer uuid
     :param source_universe_name: str - the name of the source universe
@@ -252,7 +249,7 @@ def perform_xcluster_dr_switchover(
 
 def perform_xcluster_dr_failover(customer_uuid: str, source_universe_name: str) -> str:
     """
-    Performs an xCluster DR failover (aka an unplanned switchover).  This promotes the DR replica to be the Primary. This operation has a small, but non-zero RPO.
+    Performs an xCluster DR failover (unplanned emergency). This promotes the DR replica to be the Primary. This operation has a small, but non-zero RPO.
 
     :param customer_uuid: str - the customer uuid
     :param source_universe_name: str - the name of the source universe
@@ -287,7 +284,7 @@ def perform_xcluster_dr_recovery(customer_uuid: str, source_universe_name: str) 
     """
     Performs an xCluster DR recovery after an unplanned failover.
 
-    This operation currently assumes that the users intent is to reuse the original Primary (the failed) cluster as the new DR Replica. This operation will trigger a full bootstrap of the current Primary and restores it to the old Primary. The time to run this command is based on the size of the database(s) being restored.
+    This operation currently assumes that the user's intent is to reuse the original Primary (the failed) cluster as the new DR Replica. This operation will trigger a full bootstrap of the current Primary and restores it to the old Primary. The time to run this command is based on the size of the database(s) being restored.
 
     :param customer_uuid: str - the customer uuid
     :param source_universe_name: str - the name of the source universe
