@@ -30,8 +30,7 @@ def _get_database_namespaces(
     table_type="PGSQL_TABLE_TYPE",
 ) -> list:
     """
-    Returns a list of database "namespaces" (database names) filtered by a given type. For xCluster DR this will be
-    PGSQL_TABLE_TYPE (which is the default).
+    Returns a list of database "namespaces" (database names) filtered by a given type. For xCluster DR this will be PGSQL_TABLE_TYPE (which is the default).
 
     See also:
      - https://api-docs.yugabyte.com/docs/yugabyte-platform/bc7e19ff7baec-list-all-namespaces
@@ -52,8 +51,7 @@ def _get_database_namespaces(
 
 def _get_session_info():
     """
-    Basic function that gets the current user's session info from YBA. Primarily use this as a convenient way to get
-    the current user's `customerUUID`.
+    Basic function that gets the current user's session info from YBA. Primarily use this as a convenient way to get the current user's `customerUUID`.
 
     See also: https://api-docs.yugabyte.com/docs/yugabyte-platform/3b0b8530951e6-get-current-user-customer-uuid-auth-api-token
 
@@ -235,9 +233,7 @@ def _set_tables_in_dr_config(
     parallelism=8,
 ):
     """
-    Updates the set of tables that are included in the xCluster DR. As this is a POST operation, the tables list should
-    always contain the full set of table IDs intended to be used in xCluster DR replication. This also means that to
-    effectively remove tables, the POST should contain the existing set of tables minus the tables to be removed.
+    Updates the set of tables that are included in the xCluster DR. As this is a POST operation, the tables list should always contain the full set of table IDs intended to be used in xCluster DR replication. This also means that to effectively remove tables, the POST should contain the existing set of tables minus the tables to be removed.
 
     See also:
      - https://api-docs.yugabyte.com/docs/yugabyte-platform/branches/2.20/570cb66189f0d-set-tables-in-disaster-recovery-config
@@ -352,9 +348,7 @@ def _failover_xcluster_dr(
 
     NOTE: it is anticipated that, in this failure scenario, it may first require an HA switchover of YBA itself before being able to run this operation. This may also require changing the underlying YBA_URL used if the HA instance is not already behind a load balancer.
 
-    After this operation is successful, the DR Replica becomes the new Primary cluster without an automatic DR
-    configuration. Once the Primary has recovered and is accessible again, run the Restart (Repair) xCluster DR
-    operations and, once completed, optionally do a DR Switchover to return back to the original Primary DR.
+    After this operation is successful, the DR Replica becomes the new Primary cluster without an automatic DR configuration. Once the Primary has recovered and is accessible again, run the Restart (Repair) xCluster DR operations and, once completed, optionally do a DR Switchover to return back to the original Primary DR.
 
     See also:
      - https://api-docs.yugabyte.com/docs/yugabyte-platform/branches/2.20/a3bcb16787481-failover-a-disaster-recovery-config
