@@ -13,6 +13,7 @@ from core.internal_rest_apis import (
     _switchover_xcluster_dr,
     _failover_xcluster_dr,
     _get_xcluster_dr_safetime,
+    _recover_xcluster_dr_config,
 )
 from core.get_universe_info import get_universe_uuid_by_name
 from core.manage_tasks import wait_for_task
@@ -280,3 +281,23 @@ def perform_xcluster_dr_failover(customer_uuid: str, source_universe_name: str) 
         safetime_epoch_map,
     )
     return wait_for_task(customer_uuid, resp, "Failover XCluster DR")
+
+
+def perform_xcluster_dr_recovery(customer_uuid: str, source_universe_name: str) -> str:
+    """
+    Performs an xCluster DR recovery after an unplanned failover.
+
+    This operation currently assumes that the users intent is to reuse the original Primary (the failed) cluster as the new DR Replica. This operation will trigger a full bootstrap of the current Primary and restores it to the old Primary. The time to run this command is based on the size of the database(s) being restored.
+
+    :param customer_uuid: str - the customer uuid
+    :param source_universe_name: str - the name of the source universe
+    :return: resource_uuid: str - the uuid of the resource being recovered
+    """
+    dr_config = get_source_xcluster_dr_config(
+        customer_uuid, source_universe_name, "all"
+    )
+
+    dr_config_uuid = dr_config["uuid"]
+
+    resp = _recover_xcluster_dr_config(customer_uuid, dr_config_uuid)
+    return wait_for_task(customer_uuid, resp, "Recover XCluster DR")

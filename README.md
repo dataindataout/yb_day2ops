@@ -28,6 +28,8 @@ The tool currently requires using the configuration files in the `config/` direc
 
 ### Usage notes
 
+Any of the following commands can be issued via this tool, or via the YBA platform UI. Changes will be seen in both locations. Task IDs shown in the output of the commands can be tracked in the UI as well under the Tasks tab.
+
 #### xCluster DR setup
 
 ##### setup-dr                  
@@ -36,7 +38,10 @@ Create an xCluster DR configuration. Update `config/universe.yaml` and `config/a
 ##### get-dr-config             
 Show existing xCluster DR configuration info for the source universe. 
 
-By default, this will show all of the xCluster DR settings in json. You can use the `--key` option to show a single value.
+By default, this will show all of the xCluster DR settings in json. You can use the `--key` option to show a single value. Following are some useful keys:
+
+`--key paused`: indicates if the replication between universes is paused
+`--key tables`: list of IDs of tables in replication
 
 #### xCluster DR management
 
@@ -49,12 +54,17 @@ Resume the running xCluster DR replication. Verify with `get-dr-config --key pau
 ##### do-switchover             
 Switchover the running xcluster replication. A switchover is done gracefully. For example, use switchover when you want to do planned maintenance on universe nodes. The switchover process ensures the active connections are drained, replication is completed, etc.
 
-Requires name of current primary for safety (i.e., to protect you from choosing the wrong universe setup). This will be prompted interactively or you can pass in the `--current-primary` flag.
+Requires name of current primary for safety (i.e., to protect you from choosing the wrong universe setup). This will be prompted interactively or you can pass in the `--current-primary` flag. Pass the `--force` flag if you want to avoid the verification prompt.
 
 ##### do-failover               
 Failover the running xcluster replication. A failover is done in an emergency situation. For example, use failover when your primary region has a cloud outage. Failovers are immediate and not graceful.
 
-Requires name of current primary for safety (i.e., to protect you from choosing the wrong universe setup). This will be prompted interactively or you can pass in the `--current-primary` flag.
+Requires name of current primary for safety (i.e., to protect you from choosing the wrong universe setup). This will be prompted interactively or you can pass in the `--current-primary` flag. Pass the `--force` flag if you want to avoid the verification prompt.
+
+##### do-recovery
+After a failover has been issued, xcluster DR replication between the separate universes is no longer running. (Remember, the reason you did a failover is that the original primary region has failed.) When the region has been restored, you can do a recovery. This will bootstrap the current primary back to the old primary and restart replication. If you want to then have the original primary as the current primary, issue a switchover after recovery is complete.
+
+Requires name of current primary for safety (i.e., to protect you from choosing the wrong universe setup). This will be prompted interactively or you can pass in the `--current-primary` flag. Pass the `--force` flag if you want to avoid the verification prompt.
 
 #### xCluster DR table management
 
