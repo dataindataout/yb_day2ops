@@ -394,3 +394,28 @@ def _get_xcluster_dr_safetime(customer_uuid: str, dr_config_uuid: str):
         url=f"{auth_config['YBA_URL']}/api/v1/customers/{customer_uuid}/dr_configs/{dr_config_uuid}/safetime",
         headers=auth_config["API_HEADERS"],
     ).json()
+
+
+def _recover_xcluster_dr_config(
+    customer_uuid: str, dr_config_uuid: str, dbs_list=None, is_force_delete=False
+):
+    """
+    Repairs a failed xCluster DR after a failover event.
+
+    The underlying API allows for the use of a different bootstrap params and dbs list, but this is optional - they default to the original DR config's settings.
+
+    See also:
+     - https://api-docs.yugabyte.com/docs/yugabyte-platform/branches/2.20/9bc18aeb584ec-restart-disaster-recovery-config
+
+    :param customer_uuid: str - the Customer UUID
+    :param dr_config_uuid: str - the DR config UUID to use
+    :param is_force_delete: bool - force delete of what?  Optional, default is False
+    :return: json of YBPTask (it may be passed to wait_for_task)
+    """
+    disaster_recovery_restart_form_data = {"dbs": dbs_list or []}
+    return requests.post(
+        url=f"{auth_config['YBA_URL']}/api/v1/customers/{customer_uuid}/dr_configs/{dr_config_uuid}/restart"
+        f"?isForceDelete={json.dumps(is_force_delete)}",
+        json=disaster_recovery_restart_form_data,
+        headers=auth_config["API_HEADERS"],
+    ).json()
