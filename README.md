@@ -7,6 +7,28 @@ Prior to using this module, please review the entire xCluster DR documentation, 
 
 These commands do not affect the synchronous replication happening *within* a universe. They are only used to control the asynchronous DR replication established *between* universes. (A YugabyteDB universe is commonly thought of as a cluster of nodes having distributed data within a region or other fault domain.)
 
+## Pre-requisites
+
+You should have Python 3.10+.
+
+The following third-party plugins are used in addition to the standard Python modules. See the requirements.txt file for current versions.
+
+### Requests
+https://requests.readthedocs.io/en/latest/
+Used to send http requests to the APIs.
+
+### Typer
+https://typer.tiangolo.com/
+Typer is the plugin that facilitates running the APIs within a CLI app.
+
+### PyYAML
+https://pyyaml.org/wiki/PyYAMLDocumentation
+This is used to parse yaml configuration files.
+
+### Tabulate
+https://github.com/astanin/python-tabulate
+This is used to display results from API calls in a table. It's a nice-to-have, so feel free to rip it out if you don't ever plan to use the app in an interactive fashion.
+
 ## Run the CLI app
 
 The CLI app is started by running `python src/mainapp.py`. It is there you can see the available options.
@@ -83,22 +105,6 @@ Pass comma-delimited table IDs found in `get-unreplicated-tables`. All tables in
 ```
 python src/mainapp.py do-add-tables-to-dr --add-table-ids "00004702000030008000000000004003,00004702000030008000000000004000"
 ```
-
-## Plugins used
-
-The following third-party plugins are used:
-
-### Requests
-https://requests.readthedocs.io/en/latest/
-Used to send http requests to the APIs.
-
-### Typer
-https://typer.tiangolo.com/
-Typer is the plugin that facilitates running the APIs within a CLI app.
-
-### Tabulate
-https://github.com/astanin/python-tabulate
-This is used to display results from API calls in a table. It's a nice-to-have, so feel free to rip it out if you don't ever plan to use the app in an interactive fashion.
 
 ## Roadmap
 
