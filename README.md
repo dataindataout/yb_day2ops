@@ -26,6 +26,46 @@ The tool currently requires using the configuration files in the `config/` direc
 
 `universe.yaml` Contains the user-friendly names of the source and target universes to be controlled via this CLI app, as well as the databases to be set up with DR and the backup location for the initial backup/restore from the source to the target.
 
+### Usage notes
+
+#### xCluster DR setup
+
+##### setup-dr                  
+Create an xCluster DR configuration. Update `config/universe.yaml` and `config/auth.yaml` with the related platform and universe values.
+
+##### get-dr-config             
+Show existing xCluster DR configuration info for the source universe. 
+
+By default, this will show all of the xCluster DR settings in json. You can use the `--key` option to show a single value.
+
+#### xCluster DR management
+
+##### do-pause-xcluster         
+Pause the running xCluster DR replication. Verify with `get-dr-config --key paused`. If successful, this value will be `True`.
+
+##### do-resume-xcluster        
+Resume the running xCluster DR replication. Verify with `get-dr-config --key paused`. If successful, this value will be `False`.
+
+##### do-switchover             
+Switchover the running xcluster replication. A switchover is done gracefully. For example, use switchover when you want to do planned maintenance on universe nodes. The switchover process ensures the active connections are drained, replication is completed, etc.
+
+Requires name of current primary for safety (i.e., to protect you from choosing the wrong universe setup). This will be prompted interactively or you can pass in the `--current-primary` flag.
+
+##### do-failover               
+Failover the running xcluster replication. A failover is done in an emergency situation. For example, use failover when your primary region has a cloud outage. Failovers are immediate and not graceful.
+
+Requires name of current primary for safety (i.e., to protect you from choosing the wrong universe setup). This will be prompted interactively or you can pass in the `--current-primary` flag.
+
+#### xCluster DR table management
+
+##### get-unreplicated-tables   
+Show tables that have not been added to the xCluster DR replication. You can then add these tables via the `do-add-tables-to-dr` function.
+
+##### do-add-tables-to-dr
+Add specified unreplicated table to the xCluster DR configuration to be replicated. 
+
+Before adding tables to the DR config, be sure that (a) the table definition has been created on both the primary and replica, and (b) the tables are empty. If the table definition is not created on both sides, the process will fail. If the tables are not empty, the entire database/keyspace holding those tables will be bootstrapped, and this can take some time.
+
 ## Plugins used
 
 The following third-party plugins are used:
@@ -62,7 +102,7 @@ See closed pull requests for more detail on completed items.
 - [x] View and add unreplicated tables
 - [x] Pause and resume replication
 - [x] Switchover (graceful) replication between universes in xCluster DR config
-- [ ] Failover (immediate) replication between universes in xCluster DR config
+- [x] Failover (immediate) replication between universes in xCluster DR config
 - [ ] Repair replication between universes after failover
 - [ ] Observability: replication lag
 - [ ] Observability: safetime
