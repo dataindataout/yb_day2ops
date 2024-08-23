@@ -378,7 +378,9 @@ def _get_xcluster_dr_safetime(customer_uuid: str, dr_config_uuid: str):
     Get the xCluster DR config safe times. This information is needed to pass into the _failover_xcluster_dr method.
 
     See also:
-     - <can't find these docs yet>
+     - https://api-docs.yugabyte.com/docs/yugabyte-platform/branches/2.20/81064c565fddc-get-disaster-recovery-config-safetime
+     - https://docs.yugabyte.com/v2.20/deploy/multi-dc/async-replication/async-transactional-failover/#pause-replication-and-get-the-safe-time
+     - https://docs.yugabyte.com/v2.20/yugabyte-platform/back-up-restore-universes/disaster-recovery/disaster-recovery-setup/#metrics
 
     :param customer_uuid: str - the Customer UUID
     :param dr_config_uuid: str - the DR config UUID to use

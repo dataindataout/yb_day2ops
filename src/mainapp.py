@@ -14,7 +14,6 @@ from core.get_universe_info import get_universe_uuid_by_name
 from includes.overrides import suppress_warnings
 from xclusterdr.manage_dr_cluster import (
     create_xcluster_dr,
-    get_source_xcluster_dr_config,
     get_xcluster_dr_available_tables,
     add_tables_to_xcluster_dr,
     pause_xcluster,
@@ -23,6 +22,8 @@ from xclusterdr.manage_dr_cluster import (
     perform_xcluster_dr_failover,
     perform_xcluster_dr_recovery,
 )
+from xclusterdr.common import get_source_xcluster_dr_config
+from xclusterdr.observability import get_xcluster_dr_safetimes
 
 suppress_warnings()
 
@@ -218,13 +219,13 @@ def do_failover(
     force: Annotated[
         bool,
         typer.Option(
-            prompt="You are about to perform an emergency failover to the replica cluster. XCLUSTER REPLICATION BETWEEN PRIMARY AND REPLICA UNIVERSES WILL BE STOPPED AFTER THIS UNTIL YOU REPAIR IT. Please confirm. "
+            prompt="You are about to perform an emergency failover to the replica cluster. XCLUSTER REPLICATION BETWEEN PRIMARY AND REPLICA UNIVERSES WILL BE STOPPED AFTER THIS UNTIL YOU RECOVER IT. Please confirm. "
         ),
     ],
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
 ):
     """
-    Failover (immediately, emergently, non-gracefully) the running xCluster DR replication
+    Failover (immediately, non-gracefully) the running xCluster DR replication
     """
     if force:
         try:
@@ -300,7 +301,7 @@ def do_add_tables_to_dr(
     ],
 ):
     """
-    Add specified unreplicated table to the xCluster DR configuration to be replicated.
+    Add specified unreplicated table to the xCluster DR configuration
     """
     if add_table_ids:
         return add_tables_to_xcluster_dr(
@@ -308,6 +309,22 @@ def do_add_tables_to_dr(
         )
     else:
         print("Please provide table IDs. Operation cancelled.")
+
+
+## app commands: xCluster DR observability
+
+
+@app.command("obs-latency", rich_help_panel="xCluster DR Replication Observability")
+def get_observability_safetime_lag(
+    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    xcluster_source_name: Annotated[
+        str, typer.Argument(default_factory=get_xcluster_source_name)
+    ],
+):
+    """
+    Retrieve latency and safetime metrics
+    """
+    print(get_xcluster_dr_safetimes(customer_uuid, xcluster_source_name))
 
 
 ## the app callback
