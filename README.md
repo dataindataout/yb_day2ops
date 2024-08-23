@@ -35,28 +35,6 @@ This is used to parse yaml configuration files.
 https://github.com/astanin/python-tabulate
 This is used to display results from API calls in a table. It's a nice-to-have, so feel free to rip it out if you don't ever plan to use the app in an interactive fashion.
 
-## Pre-requisites
-
-You should have Python 3.10+.
-
-The following third-party plugins are used in addition to the standard Python modules. See the requirements.txt file for current versions.
-
-### Requests
-https://requests.readthedocs.io/en/latest/
-Used to send http requests to the APIs.
-
-### Typer
-https://typer.tiangolo.com/
-Typer is the plugin that facilitates running the APIs within a CLI app.
-
-### PyYAML
-https://pyyaml.org/wiki/PyYAMLDocumentation
-This is used to parse yaml configuration files.
-
-### Tabulate
-https://github.com/astanin/python-tabulate
-This is used to display results from API calls in a table. It's a nice-to-have, so feel free to rip it out if you don't ever plan to use the app in an interactive fashion.
-
 ## Run the CLI app
 
 The CLI app is started by running `python src/mainapp.py`. It is there you can see the available options.
