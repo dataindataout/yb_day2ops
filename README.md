@@ -133,46 +133,83 @@ See https://docs.yugabyte.com/v2.20/yugabyte-platform/back-up-restore-universes/
 
 Displays the state, status, primaryUniverseState, drReplicaUniverseState, and paused values from the xcluster DR config.
 
+---
+
 `state` values (status of the DR configuration)
 
 `state: Initializing` - DR replication is being initialized between source and target
+
 `state: Replicating` - DR replication has been established between source and target
+
 `state: Switchover in Progress` - the replication stream is in the process of switching over
+
 `state: Failover in Progress` - the replication stream is in the process of failing over
+
 `state: Halted` - DR replication was halted during failover because data is not in sync between source and target
+
 `state: Error` - an error was experienced during replication (re)configuration
+
+---
 
 `status` values (status of the DR replication stream)
 
+
 `status: Initialized` - the configuration has been applied, but replication is not yet running
+
 `status: Running` - the configured DR xcluster replication is running (but may be paused)
+
 `status: Updating` - the DR xcluster configuration is being changed for this stream
+
 `status: DeletedUniverse` - either the source or the target has been force-deleted
+
 `status: DeletionFailed` - removing the async replication config has failed
+
 `status: Failed` - an error was experienced during replication (re)configuration
 
-`primaryUniverseState` (status of the source side of the replication stream)
+---
+
+`primaryUniverseState` values (status of the source side of the replication stream)
+
 
 `primaryUniverseState: Unconfigured for DR` - this universe is not part of an xcluster DR configuration 
+
 `primaryUniverseState: Ready to replicate` - checkpoints have been established on the source tables
+
 `primaryUniverseState: Waiting for DR` - before bootstrapping, the source is waiting for a configured time to give the target time to drop the database to be replicated (if present)
+
 `primaryUniverseState: Replicating data` - source is sending data to target without issue
+
 `primaryUniverseState: Preparing for switchover` - source is waiting for all remaining changes to be replicated to target
+
 `primaryUniverseState: Switching to DR replica` - DR configuration is changing to make this the target
+
 `primaryUniverseState: Universe marked as DR failed` - a repair is required to restore the DR replication, probably after failover
 
-`drReplicaUniverseState` (status of the target side of the replication stream)
+---
+
+`drReplicaUniverseState` values (status of the target side of the replication stream)
+
 
 `drReplicaUniverseState: Unconfigured for DR` - this universe is not part of an xcluster DR configuration
+
 `drReplicaUniverseState: Bootstrapping` - a full copy (backup/restore) is being done from the source
+
 `drReplicaUniverseState: Receiving data, Ready for reads` - target is receiving data from source without issue
+
 `drReplicaUniverseState: Switching to DR primary` - DR configuration is changing to make this the source
+
 `drReplicaUniverseState: Universe marked as DR failed` - a repair is required to restore the DR replication, probably after failover
+
+---
 
 `paused`
 
+
 `paused: True` - DR replication has been paused, and no data is being replicated between source and target
+
 `paused: False` - DR replication has not been paused (has never been paused or was resumed after being paused), and so data is being replicated between source and target
+
+---
 
 Notes:
 1. The replication state, status, etc. (in particular status="Running" doesn't change if the replication is paused).
