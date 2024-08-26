@@ -133,8 +133,9 @@ See https://docs.yugabyte.com/v2.20/yugabyte-platform/back-up-restore-universes/
 
 Displays the state, status, primaryUniverseState, drReplicaUniverseState, and paused values from the xcluster DR config.
 
-`state` values (status of the DR configuration)
+---
 
+`state` values (status of the DR configuration)
 
 `state: Initializing` - DR replication is being initialized between source and target
 
@@ -148,6 +149,7 @@ Displays the state, status, primaryUniverseState, drReplicaUniverseState, and pa
 
 `state: Error` - an error was experienced during replication (re)configuration
 
+---
 
 `status` values (status of the DR replication stream)
 
@@ -164,8 +166,9 @@ Displays the state, status, primaryUniverseState, drReplicaUniverseState, and pa
 
 `status: Failed` - an error was experienced during replication (re)configuration
 
+---
 
-`primaryUniverseState` (status of the source side of the replication stream)
+`primaryUniverseState` values (status of the source side of the replication stream)
 
 
 `primaryUniverseState: Unconfigured for DR` - this universe is not part of an xcluster DR configuration 
@@ -182,8 +185,9 @@ Displays the state, status, primaryUniverseState, drReplicaUniverseState, and pa
 
 `primaryUniverseState: Universe marked as DR failed` - a repair is required to restore the DR replication, probably after failover
 
+---
 
-`drReplicaUniverseState` (status of the target side of the replication stream)
+`drReplicaUniverseState` values (status of the target side of the replication stream)
 
 
 `drReplicaUniverseState: Unconfigured for DR` - this universe is not part of an xcluster DR configuration
@@ -196,6 +200,7 @@ Displays the state, status, primaryUniverseState, drReplicaUniverseState, and pa
 
 `drReplicaUniverseState: Universe marked as DR failed` - a repair is required to restore the DR replication, probably after failover
 
+---
 
 `paused`
 
@@ -204,6 +209,7 @@ Displays the state, status, primaryUniverseState, drReplicaUniverseState, and pa
 
 `paused: False` - DR replication has not been paused (has never been paused or was resumed after being paused), and so data is being replicated between source and target
 
+---
 
 Notes:
 1. The replication state, status, etc. (in particular status="Running" doesn't change if the replication is paused).
