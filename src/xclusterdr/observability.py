@@ -3,7 +3,10 @@ import tabulate
 import datetime
 import pytz
 
-from core.internal_rest_apis import _get_xcluster_dr_safetime, _get_universe_by_name
+from core.internal_rest_apis import (
+    _get_xcluster_dr_safetime,
+    _get_universe_by_name,
+)
 from xclusterdr.common import get_source_xcluster_dr_config
 
 
@@ -56,3 +59,28 @@ def get_xcluster_dr_safetimes(customer_uuid: str, source_universe_name: str):
             floatfmt=".3f",
             showindex=False,
         )
+
+
+def get_status(customer_uuid: str, source_universe_name: str):
+
+    get_source_universe_response = _get_universe_by_name(
+        customer_uuid, source_universe_name
+    )
+    source_universe_details = next(iter(get_source_universe_response), None)
+    if source_universe_details is None:
+        raise RuntimeError(
+            f"ERROR: the universe '{source_universe_name}' was not found."
+        )
+
+    else:
+
+        status_list = get_source_xcluster_dr_config(
+            customer_uuid, source_universe_name, "all"
+        )
+
+        print("configuration: " + status_list["state"])
+        print("replication: " + status_list["status"])
+        print("paused? " + str(status_list["paused"]))
+        print("source: " + status_list["primaryUniverseState"])
+        print("target: " + status_list["drReplicaUniverseState"])
+        return "Please see the README file for interpretation of these results."

@@ -23,7 +23,7 @@ from xclusterdr.manage_dr_cluster import (
     perform_xcluster_dr_recovery,
 )
 from xclusterdr.common import get_source_xcluster_dr_config
-from xclusterdr.observability import get_xcluster_dr_safetimes
+from xclusterdr.observability import get_xcluster_dr_safetimes, get_status
 
 suppress_warnings()
 
@@ -325,6 +325,19 @@ def get_observability_safetime_lag(
     Retrieve latency and safetime metrics
     """
     print(get_xcluster_dr_safetimes(customer_uuid, xcluster_source_name))
+
+
+@app.command("obs-status", rich_help_panel="xCluster DR Replication Observability")
+def get_observability_status(
+    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    xcluster_source_name: Annotated[
+        str, typer.Argument(default_factory=get_xcluster_source_name)
+    ],
+):
+    """
+    Retrieve status, state, etc.
+    """
+    print(get_status(customer_uuid, xcluster_source_name))
 
 
 ## the app callback
