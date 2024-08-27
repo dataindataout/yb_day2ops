@@ -2,6 +2,7 @@ import tabulate
 
 import datetime
 import pytz
+import yaml
 
 from core.internal_rest_apis import (
     _get_xcluster_dr_safetime,
@@ -77,10 +78,41 @@ def get_status(customer_uuid: str, source_universe_name: str):
         status_list = get_source_xcluster_dr_config(
             customer_uuid, source_universe_name, "all"
         )
+        state = status_list["state"]
+        status = status_list["status"]
+        paused = status_list["paused"]
+        primaryUniverseState = status_list["primaryUniverseState"]
+        drReplicaUniverseState = status_list["drReplicaUniverseState"]
 
-        print("configuration: " + status_list["state"])
-        print("replication: " + status_list["status"])
-        print("paused? " + str(status_list["paused"]))
-        print("source: " + status_list["primaryUniverseState"])
-        print("target: " + status_list["drReplicaUniverseState"])
-        return "Please see the README file for interpretation of these results."
+        with open("config/status.yaml", "r") as file:
+            status_tooltips = yaml.safe_load(file)
+
+        configuration_tooltip = status_tooltips.get("configuration", {}).get(
+            state, "this is a new status that is undefined"
+        )
+
+        replication_tooltip = status_tooltips.get("replication", {}).get(
+            status, "this is a new status that is undefined"
+        )
+
+        paused_tooltip = status_tooltips.get("paused", {}).get(
+            paused, "this is a new status that is undefined"
+        )
+
+        source_tooltip = status_tooltips.get("source", {}).get(
+            primaryUniverseState,
+            "this is a new status that is undefined",
+        )
+
+        target_tooltip = status_tooltips.get("target", {}).get(
+            drReplicaUniverseState,
+            "this is a new status that is undefined",
+        )
+
+        print(f"configuration: {state} - {configuration_tooltip}")
+        print(f"replication: {status} - {replication_tooltip}")
+        print(f"paused? {paused} - {paused_tooltip}")
+        print(f"source: {primaryUniverseState} - {source_tooltip}")
+        print(f"target: {drReplicaUniverseState} - {target_tooltip}")
+
+        return "Please see the README file for further notes on these status fields."
