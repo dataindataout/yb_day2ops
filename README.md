@@ -6,6 +6,28 @@ The YBA API version used is 2.20 LTS. If you are using a different version, you 
 
 Use common sense and good development practices when testing and preparing to run derivatives of this in your environments.
 
+- [Pre-requisites](#pre-requisites)
+- [Run the CLI app](#run-the-cli-app)
+    - [Built-in help](#built-in-help)
+    - [Configuration options](#configuration-options)
+    - [Command-specific notes](#command-specific-notes)
+        - [xCluster DR setup](#xcluster-dr-setup)
+            - [setup-dr](#setup-dr)
+            - [get-dr-config](#get-dr-config)
+        - [xCluster DR management](#xcluster-dr-management)
+            - [do-pause-xcluster](#do-pause-xcluster)
+            - [do-resume-xcluster](#do-resume-xcluster)
+            - [do-switchover](#do-switchover)
+            - [do-failover](#do-failover)
+            - [do-recovery](#do-recovery)
+        - [xCluster DR table management](#xcluster-dr-table-management)
+            - [get-unreplicated-tables](#get-unreplicated-tables)
+            - [do-add-tables-to-dr](#do-add-tables-to-dr)
+        - [xCluster DR observability](#xcluster-dr-observability)
+            - [obs-latency](#obs-latency)
+            - [obs-status](#obs-status)
+- [Roadmap](#roadmap)
+
 ## Notes on using this for xCluster DR
 
 Prior to using this module, please review the entire xCluster DR documentation, starting here:
@@ -137,7 +159,7 @@ Displays the state, status, primaryUniverseState, drReplicaUniverseState, and pa
 
 `state` values (status of the DR configuration)
 
-`state: Initializing` - DR replication is being initialized between source and target
+`state: Initializing` - xcluster DR objects in YBA have been created, and the configuration is pending changes at each universe's database level
 
 `state: Replicating` - DR replication has been established between source and target
 
@@ -175,13 +197,11 @@ Displays the state, status, primaryUniverseState, drReplicaUniverseState, and pa
 
 `primaryUniverseState: Ready to replicate` - checkpoints have been established on the source tables
 
-`primaryUniverseState: Waiting for DR` - before bootstrapping, the source is waiting for a configured time to give the target time to drop the database to be replicated (if present)
+`primaryUniverseState: Waiting for DR` - backup of the source is completed; waiting for restore and setup to complete on the target
 
 `primaryUniverseState: Replicating data` - source is sending data to target without issue
 
 `primaryUniverseState: Preparing for switchover` - source is waiting for all remaining changes to be replicated to target
-
-`primaryUniverseState: Switching to DR replica` - DR configuration is changing to make this the target
 
 `primaryUniverseState: Universe marked as DR failed` - a repair is required to restore the DR replication, probably after failover
 
@@ -192,11 +212,11 @@ Displays the state, status, primaryUniverseState, drReplicaUniverseState, and pa
 
 `drReplicaUniverseState: Unconfigured for DR` - this universe is not part of an xcluster DR configuration
 
-`drReplicaUniverseState: Bootstrapping` - a full copy (backup/restore) is being done from the source
+`drReplicaUniverseState: Bootstrapping` - a full copy (backup/restore) is being done from the source on the target
 
 `drReplicaUniverseState: Receiving data, Ready for reads` - target is receiving data from source without issue
 
-`drReplicaUniverseState: Switching to DR primary` - DR configuration is changing to make this the source
+`drReplicaUniverseState: Switching to DR primary` - during a failover, DR configuration is changing to make this the source
 
 `drReplicaUniverseState: Universe marked as DR failed` - a repair is required to restore the DR replication, probably after failover
 
@@ -242,7 +262,7 @@ See closed pull requests for more detail on completed items.
 - [x] Recover replication between universes after failover
 - [ ] Remove replication between universes
 - [x] Observability: safetime lag
-- [ ] Observability: status (paused/running and status)
+- [x] Observability: status (paused/running and status)
 - [ ] Observability: current primary
 - [ ] Replication lag every x (configurable) seconds
 - [ ] View replicated tables
