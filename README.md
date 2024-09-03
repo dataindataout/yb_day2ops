@@ -72,6 +72,8 @@ For example:
 python src/mainapp.py setup-dr --help 
 ```
 
+![example help screen](https://github.com/dataindataout/yb_day2ops/blob/main/images/day2ops_screenshot_setupdr_help.png)
+
 ### Configuration options
 
 The tool currently requires using the configuration files in the `config/` directory. The following describes the contents of the various files in that directory:
