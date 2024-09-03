@@ -61,6 +61,8 @@ This is used to display results from API calls in a table. It's a nice-to-have, 
 
 The CLI app is started by running `python src/mainapp.py`. It is there you can see the available options.
 
+![CLI default screen](https://github.com/dataindataout/yb_day2ops/blob/main/images/day2ops_screenshot_main_default.png)
+
 ### Built-in help
 
 To review the relevant flags for any command, use the `--help` flag after the command. 
@@ -69,6 +71,8 @@ For example:
 ```
 python src/mainapp.py setup-dr --help 
 ```
+
+![example help screen](https://github.com/dataindataout/yb_day2ops/blob/main/images/day2ops_screenshot_setupdr_help.png)
 
 ### Configuration options
 
