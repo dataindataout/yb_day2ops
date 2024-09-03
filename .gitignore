@@ -19,6 +19,9 @@ ENV/
 env.bak/
 venv.bak/
 
+# Oh, mac
+.DS_Store
+
 # app-specific
 auth.yaml
 universe.yaml
