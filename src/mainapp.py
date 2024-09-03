@@ -27,7 +27,7 @@ from xclusterdr.observability import get_xcluster_dr_safetimes, get_status
 
 suppress_warnings()
 
-app = typer.Typer(no_args_is_help=True, rich_markup_mode="rich")
+app = typer.Typer(no_args_is_help=True, rich_markup_mode="rich", add_completion=False)
 state = {"verbose": False}
 
 # get universe config values
