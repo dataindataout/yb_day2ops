@@ -89,7 +89,7 @@ Any of the following commands can be issued via this tool, or via the YBA platfo
 #### xCluster DR setup
 
 ##### setup-dr                  
-Create an xCluster DR configuration. Update `config/universe.yaml` and `config/auth.yaml` with the related platform and universe values.
+Create an xCluster DR configuration. Update `config/universe.yaml` and `config/auth.yaml` with the related platform, universe, database, and backup location values.
 
 ##### get-dr-config             
 Show existing xCluster DR configuration info for the source universe. 

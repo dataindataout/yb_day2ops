@@ -63,7 +63,26 @@ def _get_session_info():
     ).json()
 
 
-def _get_configs_by_type(customer_uuid: str, config_type: str):
+# def _get_configs_by_type(customer_uuid: str, config_type: str):
+#     """
+#     Return a Customer's configs of a specific config type. This is useful for getting things like the STORAGE configs.
+
+#     See also:
+#      - https://api-docs.yugabyte.com/docs/yugabyte-platform/d09c43e4a8bfd-list-all-customer-configurations
+#      - https://api-docs.yugabyte.com/docs/yugabyte-platform/0e51caecbdf07-customer-config
+
+#     :param customer_uuid: str - the customer UUID
+#     :param config_type: enum<str> - the config type (of STORAGE, ALERTS, CALLHOME, PASSWORD_POLICY).
+#     :return: json array of CustomerConfig
+#     """
+#     response = requests.get(
+#         url=f"{auth_config['YBA_URL']}/api/v1/customers/{customer_uuid}/configs",
+#         headers=auth_config["API_HEADERS"],
+#     ).json()
+#     return list(filter(lambda config: config["type"] == config_type, response))
+
+
+def _get_backup_UUID_by_name(customer_uuid: str, config_name: str):
     """
     Return a Customer's configs of a specific config type. This is useful for getting things like the STORAGE configs.
 
@@ -79,7 +98,7 @@ def _get_configs_by_type(customer_uuid: str, config_type: str):
         url=f"{auth_config['YBA_URL']}/api/v1/customers/{customer_uuid}/configs",
         headers=auth_config["API_HEADERS"],
     ).json()
-    return list(filter(lambda config: config["type"] == config_type, response))
+    return list(filter(lambda config: config["configName"] == config_name, response))
 
 
 def _get_task_status(customer_uuid: str, task_uuid: str) -> json:

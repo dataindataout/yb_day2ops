@@ -54,6 +54,13 @@ def get_xcluster_replicate_database_names():
     return replicate_database_names
 
 
+def get_xcluster_shared_backup_location():
+    demo_config_file = Path("config/universe.yaml")
+    demo_config_data = yaml.safe_load(demo_config_file.read_text())
+    shared_backup_location = demo_config_data["SHARED_BACKUP_LOCATION"]
+    return shared_backup_location
+
+
 # get auth config values
 
 
@@ -102,6 +109,9 @@ def create_xluster_dr_configuration(
     replicate_database_names: Annotated[
         str, typer.Argument(default_factory=get_xcluster_replicate_database_names)
     ],
+    shared_backup_location: Annotated[
+        str, typer.Argument(default_factory=get_xcluster_shared_backup_location)
+    ],
 ):
     """
     Create an xCluster DR configuration
@@ -111,6 +121,7 @@ def create_xluster_dr_configuration(
         xcluster_source_name,
         xcluster_target_name,
         replicate_database_names,
+        shared_backup_location,
     )
 
 

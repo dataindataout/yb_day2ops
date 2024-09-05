@@ -1,3 +1,4 @@
 XCLUSTER_SOURCE: "source-universe-name"
 XCLUSTER_TARGET: "target-universe-name"
 REPLICATE_DATABASE_NAMES: { "database-name" }
+SHARED_BACKUP_LOCATION: "human-friendly-name-of-configured-backup-location"
