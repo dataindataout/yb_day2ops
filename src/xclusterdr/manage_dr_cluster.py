@@ -2,7 +2,6 @@ import tabulate
 
 from core.internal_rest_apis import (
     _get_all_ysql_tables_list,
-    _get_configs_by_type,
     _get_universe_by_name,
     _get_database_namespaces,
     _create_dr_config,
@@ -13,6 +12,7 @@ from core.internal_rest_apis import (
     _failover_xcluster_dr,
     _get_xcluster_dr_safetime,
     _recover_xcluster_dr_config,
+    _get_backup_UUID_by_name,
 )
 from core.get_universe_info import get_universe_uuid_by_name
 from core.manage_tasks import wait_for_task
@@ -84,16 +84,17 @@ def create_xcluster_dr(
     source_universe_name: str,
     target_universe_name: str,
     db_names: set,
+    backup_location: str,
 ):
 
-    storage_configs = _get_configs_by_type(customer_uuid, "STORAGE")
-
+    storage_configs = _get_backup_UUID_by_name(customer_uuid, backup_location)
     if len(storage_configs) < 1:
         raise RuntimeError(
-            "WARN: no storage configs found, at least one is required for xCluster DR setup."
+            f"ERROR: The backup location '{backup_location}' was not found"
         )
 
-    storage_config_uuid = storage_configs[1]["configUUID"]
+    else:
+        storage_config_uuid = storage_configs[0]["configUUID"]
 
     get_source_universe_response = _get_universe_by_name(
         customer_uuid, source_universe_name
