@@ -7,7 +7,10 @@ import yaml
 from core.internal_rest_apis import (
     _get_xcluster_dr_safetime,
     _get_universe_by_name,
+    _get_universe_by_uuid,
+    _get_xcluster_dr_configs,
 )
+
 from xclusterdr.common import get_source_xcluster_dr_config
 
 
@@ -116,3 +119,56 @@ def get_status(customer_uuid: str, source_universe_name: str):
         print(f"target: {drReplicaUniverseState} - {target_tooltip}")
 
         return "Please see the README file for further notes on these status fields."
+
+
+def get_xcluster_details_by_name(customer_uuid: str, universe_name: str) -> str:
+    """
+    Helper function to return xCluster details of the universe from a given friendly name.
+
+    :param customer_uuid: str - the customer UUID
+    :param universe_name: str - the universe's friendly name
+    :raises RuntimeError: if the universe is not found
+    """
+    universe = next(iter(_get_universe_by_name(customer_uuid, universe_name)), None)
+
+    if universe is None:
+        raise RuntimeError(
+            f"ERROR: failed to find a universe '{universe_name}' by name"
+        )
+    else:
+        source_config_UUID = universe["drConfigUuidsAsSource"]
+        target_config_UUID = universe["drConfigUuidsAsTarget"]
+
+        if len(source_config_UUID) > 0:
+
+            target_uuid_in_this_xcluster_config = _get_xcluster_dr_configs(
+                customer_uuid, source_config_UUID[0]
+            )["drReplicaUniverseUuid"]
+
+            target_name_in_this_xcluster_config = _get_universe_by_uuid(
+                customer_uuid, target_uuid_in_this_xcluster_config
+            )["name"]
+
+            print(
+                f"This universe is a source, and the target universe is: {target_name_in_this_xcluster_config}"
+            )
+
+        elif len(target_config_UUID) > 0:
+
+            source_uuid_in_this_xcluster_config = _get_xcluster_dr_configs(
+                customer_uuid, target_config_UUID[0]
+            )["primaryUniverseUuid"]
+
+            source_name_in_this_xcluster_config = _get_universe_by_uuid(
+                customer_uuid, source_uuid_in_this_xcluster_config
+            )["name"]
+
+            print(
+                f"This universe is a target, and the source universe is: {source_name_in_this_xcluster_config}"
+            )
+
+        else:
+
+            raise RuntimeError(
+                f"ERROR: '{universe_name}' is not configured as part of an xCluster config."
+            )
