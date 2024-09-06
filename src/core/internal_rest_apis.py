@@ -8,7 +8,7 @@ auth_config = get_auth_config()
 
 def _get_universe_by_name(customer_uuid: str, universe_name: str):
     """
-    Basic function that returns a universe by its friendly name.
+    Basic function that returns the details of a universe by its friendly name.
 
     See also:
      - https://api-docs.yugabyte.com/docs/yugabyte-platform/66e50c174046d-list-universes
@@ -20,6 +20,20 @@ def _get_universe_by_name(customer_uuid: str, universe_name: str):
     """
     return requests.get(
         url=f"{auth_config['YBA_URL']}/api/v1/customers/{customer_uuid}/universes?name={universe_name}",
+        headers=auth_config["API_HEADERS"],
+    ).json()
+
+
+def _get_universe_by_uuid(customer_uuid: str, universe_uuid: str):
+    """
+    Basic function that returns a universe by its UUID.
+
+    See also:
+    - https://api-docs.yugabyte.com/docs/yugabyte-platform/73fba4c90fb69-get-a-universe
+    """
+
+    return requests.get(
+        url=f"{auth_config['YBA_URL']}/api/v1/customers/{customer_uuid}/universes/{universe_uuid}",
         headers=auth_config["API_HEADERS"],
     ).json()
 

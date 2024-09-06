@@ -26,6 +26,7 @@ Use common sense and good development practices when testing and preparing to ru
         - [xCluster DR observability](#xcluster-dr-observability)
             - [obs-latency](#obs-latency)
             - [obs-status](#obs-status)
+            - [obs-xcluster](#obs-xcluster)
 - [Roadmap](#roadmap)
 
 ## Notes on using this for xCluster DR
@@ -163,6 +164,11 @@ Notes:
 1. The replication state, status, etc. (in particular status="Running" doesn't change if the replication is paused).
 2. The replication state, status, etc. don't change if a universe itself is paused.
 
+##### obs-xcluster
+Given a universe name, determine if it is a source, target, or neither. If it is a source, show the target universe name. If it is a target, show the source universe name.
+
+Use the `--universe-name` flag to bypass providing this value interactively.
+
 ## Roadmap
 
 Please submit an issue for any requests for features or relative prioritization.
@@ -177,8 +183,9 @@ See closed pull requests for more detail on completed items.
 - [ ] Return 0 on successful completion; non-zero on failure for non-interactive mode
 - [ ] All parameters have default values
 - [ ] Flag to redirect output to a log file / general logging 
-- [ ] Add backup location to configuration 
+- [x] Add backup location to configuration 
 - [ ] Add example syntax to all commands
+- [ ] Refactor functions to use dynamic source detection instead of configured value
 
 ### xCluster DR
 - [x] Establish replication between universes
@@ -191,7 +198,7 @@ See closed pull requests for more detail on completed items.
 - [ ] Remove replication between universes
 - [x] Observability: safetime lag
 - [x] Observability: status (paused/running and status)
-- [ ] Observability: current primary
+- [x] Observability: current primary
 - [ ] Replication lag every x (configurable) seconds
 - [ ] View replicated tables
 - [ ] Remove tables from replication

@@ -11,7 +11,9 @@ from core.internal_rest_apis import (
     _get_session_info,
 )
 from core.get_universe_info import get_universe_uuid_by_name
+
 from includes.overrides import suppress_warnings
+
 from xclusterdr.manage_dr_cluster import (
     create_xcluster_dr,
     get_xcluster_dr_available_tables,
@@ -23,7 +25,12 @@ from xclusterdr.manage_dr_cluster import (
     perform_xcluster_dr_recovery,
 )
 from xclusterdr.common import get_source_xcluster_dr_config
-from xclusterdr.observability import get_xcluster_dr_safetimes, get_status
+
+from xclusterdr.observability import (
+    get_xcluster_dr_safetimes,
+    get_status,
+    get_xcluster_details_by_name,
+)
 
 suppress_warnings()
 
@@ -349,6 +356,20 @@ def get_observability_status(
     Retrieve status, state, etc.
     """
     print(get_status(customer_uuid, xcluster_source_name))
+
+
+@app.command("obs-xcluster", rich_help_panel="xCluster DR Replication Observability")
+def get_xcluster_details_by_universe_name(
+    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    universe_name: Annotated[
+        str,
+        typer.Option(prompt="Please provide the name of the universe"),
+    ],
+):
+    """
+    Show existing xCluster DR configuration info for a given universe
+    """
+    return get_xcluster_details_by_name(customer_uuid, universe_name)
 
 
 ## the app callback
