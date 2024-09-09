@@ -125,7 +125,7 @@ Pause the running xCluster DR replication.
 
 Example:
 ```
-python src/mainapp.py do-pause-xcluster --xcluster-source-name vparham-dr-left
+python src/mainapp.py do-pause-xcluster --xcluster-source-name source-universe-name
 ```
 
 The verification (True or False) will display at the end of this command output.
@@ -135,7 +135,7 @@ Resume the running xCluster DR replication.
 
 Example:
 ```
-python src/mainapp.py do-resume-xcluster --xcluster-source-name vparham-dr-left
+python src/mainapp.py do-resume-xcluster --xcluster-source-name source-universe-name
 ```
 
 The verification (True or False) will display at the end of this command output.
