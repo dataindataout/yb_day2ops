@@ -84,9 +84,11 @@ def create_xcluster_dr(
     customer_uuid: str,
     source_universe_name: str,
     target_universe_name: str,
-    db_names: set,
+    db_names: list,
     backup_location: str,
 ):
+
+    # verify the storage location
 
     storage_configs = _get_backup_UUID_by_name(customer_uuid, backup_location)
     if len(storage_configs) < 1:
@@ -96,6 +98,8 @@ def create_xcluster_dr(
 
     else:
         storage_config_uuid = storage_configs[0]["configUUID"]
+
+    # verify the source universe
 
     get_source_universe_response = _get_universe_by_name(
         customer_uuid, source_universe_name
@@ -119,6 +123,8 @@ def create_xcluster_dr(
             f" {dr_config_source_uuid},"
         )
 
+    # verify the target universe
+
     target_universe_response = _get_universe_by_name(
         customer_uuid, target_universe_name
     )
@@ -131,8 +137,12 @@ def create_xcluster_dr(
 
     target_universe_uuid = target_universe_details["universeUUID"]
 
+    # verify the list of databases
+
     dbs_list = _get_database_namespaces(customer_uuid, source_universe_uuid)
     dbs_list_uuids = [d["namespaceUUID"] for d in dbs_list if d["name"] in db_names]
+
+    # call the api request
 
     create_dr_response = _create_dr_config(
         customer_uuid,
@@ -167,7 +177,7 @@ def delete_xcluster_dr(customer_uuid, source_universe_name) -> str:
     dr_config_source_uuid = next(iter(universe_details["drConfigUuidsAsSource"]), None)
     if dr_config_source_uuid is None:
         raise RuntimeError(
-            f"ERROR: source universe '{source_universe_name}' does not have a disaster-recovery config!"
+            f"ERROR: the universe '{source_universe_name}' is not the source in a disaster-recovery config"
         )
 
     response = _delete_xcluster_dr_config(customer_uuid, dr_config_source_uuid)

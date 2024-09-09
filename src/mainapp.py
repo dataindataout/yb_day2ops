@@ -1,3 +1,4 @@
+import os
 import yaml
 
 import typer
@@ -39,34 +40,12 @@ app = typer.Typer(no_args_is_help=True, rich_markup_mode="rich", add_completion=
 state = {"verbose": False}
 
 # get universe config values
+demo_config_file = Path("config/universe.yaml")
+demo_config_data = yaml.safe_load(demo_config_file.read_text())
 
-
-def get_xcluster_source_name():
-    demo_config_file = Path("config/universe.yaml")
-    demo_config_data = yaml.safe_load(demo_config_file.read_text())
-    xcluster_source_name = demo_config_data["XCLUSTER_SOURCE"]
-    return xcluster_source_name
-
-
-def get_xcluster_target_name():
-    demo_config_file = Path("config/universe.yaml")
-    demo_config_data = yaml.safe_load(demo_config_file.read_text())
-    xcluster_target_name = demo_config_data["XCLUSTER_TARGET"]
-    return xcluster_target_name
-
-
-def get_xcluster_replicate_database_names():
-    demo_config_file = Path("config/universe.yaml")
-    demo_config_data = yaml.safe_load(demo_config_file.read_text())
-    replicate_database_names = demo_config_data["REPLICATE_DATABASE_NAMES"]
-    return replicate_database_names
-
-
-def get_xcluster_shared_backup_location():
-    demo_config_file = Path("config/universe.yaml")
-    demo_config_data = yaml.safe_load(demo_config_file.read_text())
-    shared_backup_location = demo_config_data["SHARED_BACKUP_LOCATION"]
-    return shared_backup_location
+if demo_config_data:
+    for key, value in demo_config_data.items():
+        os.environ[key] = str(value)
 
 
 # get auth config values
@@ -83,14 +62,14 @@ def get_customer_uuid():
 
 def get_xcluster_source_uuid():
     source_universe_uuid = get_universe_uuid_by_name(
-        get_customer_uuid(), get_xcluster_source_name()
+        get_customer_uuid(), os.getenv("XCLUSTER_SOURCE")
     )
     return source_universe_uuid
 
 
 def get_xcluster_target_uuid():
     target_universe_uuid = get_universe_uuid_by_name(
-        get_customer_uuid(), get_xcluster_target_name()
+        get_customer_uuid(), os.getenv("XCLUSTER_TARGET")()
     )
     return target_universe_uuid
 
@@ -109,21 +88,22 @@ def parse_comma_separated_list(value: str) -> List[str]:
 def create_xluster_dr_configuration(
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
     xcluster_source_name: Annotated[
-        str, typer.Argument(default_factory=get_xcluster_source_name)
+        str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
     ],
     xcluster_target_name: Annotated[
-        str, typer.Argument(default_factory=get_xcluster_target_name)
+        str, typer.Option(envvar="XCLUSTER_TARGET", prompt=True)
     ],
     replicate_database_names: Annotated[
-        str, typer.Argument(default_factory=get_xcluster_replicate_database_names)
+        str, typer.Option(envvar="REPLICATE_DATABASE_NAMES", prompt=True)
     ],
     shared_backup_location: Annotated[
-        str, typer.Argument(default_factory=get_xcluster_shared_backup_location)
+        str, typer.Option(envvar="SHARED_BACKUP_LOCATION", prompt=True)
     ],
 ):
     """
     Create an xCluster DR configuration
     """
+
     create_xcluster_dr(
         customer_uuid,
         xcluster_source_name,
@@ -136,10 +116,7 @@ def create_xluster_dr_configuration(
 @app.command("remove-dr", rich_help_panel="xCluster DR Replication Setup")
 def create_xluster_dr_configuration(
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
-    universe_name: Annotated[
-        str,
-        typer.Option(prompt="Please provide the name of the universe"),
-    ],
+    universe_name: Annotated[str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)],
 ):
     """
     Remove an xCluster DR configuration
@@ -154,7 +131,7 @@ def create_xluster_dr_configuration(
 def get_xcluster_configuration_info(
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
     xcluster_source_name: Annotated[
-        str, typer.Argument(default_factory=get_xcluster_source_name)
+        str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
     ],
     key: Annotated[
         str,
@@ -182,7 +159,7 @@ def do_pause_xcluster(
     ],
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
     xcluster_source_name: Annotated[
-        str, typer.Argument(default_factory=get_xcluster_source_name)
+        str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
     ],
 ):
     """
@@ -204,7 +181,7 @@ def do_resume_xcluster(
     ],
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
     xcluster_source_name: Annotated[
-        str, typer.Argument(default_factory=get_xcluster_source_name)
+        str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
     ],
 ):
     """
@@ -221,13 +198,13 @@ def do_switchover(
     current_primary: Annotated[
         str,
         typer.Option(
-            prompt="Please provide the name of the current primary for verification"
+            prompt="Please provide the name of the current source universe for verification"
         ),
     ],
     force: Annotated[
         bool,
         typer.Option(
-            prompt="You are about to perform a switchover of the primary cluster. Please confirm. "
+            prompt="You are about to perform a switchover of this xCluster setup. Please confirm. "
         ),
     ],
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
@@ -310,8 +287,7 @@ def do_recovery(
 def get_xcluster_dr_unreplicated_tables(
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
     xcluster_source_name: Annotated[
-        str,
-        typer.Argument(default_factory=get_xcluster_source_name),
+        str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
     ],
 ):
     """
@@ -326,12 +302,12 @@ def get_xcluster_dr_unreplicated_tables(
 def do_add_tables_to_dr(
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
     xcluster_source_name: Annotated[
-        str, typer.Argument(default_factory=get_xcluster_source_name)
+        str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
     ],
     add_table_ids: Annotated[
         str,
         typer.Option(
-            help='Comma-separated list of IDs (example: "id1, id2")',
+            help='Comma-separated list of IDs (example: "id1,id2")',
             callback=parse_comma_separated_list,
         ),
     ],
@@ -354,7 +330,7 @@ def do_add_tables_to_dr(
 def get_observability_safetime_lag(
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
     xcluster_source_name: Annotated[
-        str, typer.Argument(default_factory=get_xcluster_source_name)
+        str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
     ],
 ):
     """
@@ -367,7 +343,7 @@ def get_observability_safetime_lag(
 def get_observability_status(
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
     xcluster_source_name: Annotated[
-        str, typer.Argument(default_factory=get_xcluster_source_name)
+        str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
     ],
 ):
     """
@@ -379,10 +355,7 @@ def get_observability_status(
 @app.command("obs-xcluster", rich_help_panel="xCluster DR Replication Observability")
 def get_xcluster_details_by_universe_name(
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
-    universe_name: Annotated[
-        str,
-        typer.Option(prompt="Please provide the name of the universe"),
-    ],
+    universe_name: Annotated[str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)],
 ):
     """
     Show existing xCluster DR configuration info for a given universe
