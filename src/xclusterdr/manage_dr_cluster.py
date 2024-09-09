@@ -5,6 +5,7 @@ from core.internal_rest_apis import (
     _get_universe_by_name,
     _get_database_namespaces,
     _create_dr_config,
+    _delete_xcluster_dr_config,
     _set_tables_in_dr_config,
     _pause_xcluster_config,
     _resume_xcluster_config,
@@ -145,6 +146,33 @@ def create_xcluster_dr(
 
     dr_config_uuid = create_dr_response["resourceUUID"]
     print(f"SUCCESS: created disaster-recovery config {dr_config_uuid}")
+    return dr_config_uuid
+
+
+def delete_xcluster_dr(customer_uuid, source_universe_name) -> str:
+    """
+    Delete an xCluster DR configuration.
+
+    :param customer_uuid: str - the customer uuid
+    :param source_universe_name: str - the name of the source universe
+    :return:
+    """
+    get_universe_response = _get_universe_by_name(customer_uuid, source_universe_name)
+    universe_details = next(iter(get_universe_response), None)
+    if universe_details is None:
+        raise RuntimeError(
+            f"ERROR: source universe '{source_universe_name}' was not found!"
+        )
+
+    dr_config_source_uuid = next(iter(universe_details["drConfigUuidsAsSource"]), None)
+    if dr_config_source_uuid is None:
+        raise RuntimeError(
+            f"ERROR: source universe '{source_universe_name}' does not have a disaster-recovery config!"
+        )
+
+    response = _delete_xcluster_dr_config(customer_uuid, dr_config_source_uuid)
+    dr_config_uuid = wait_for_task(customer_uuid, response, "Delete xCluster DR")
+    print(f"SUCCESS: deleted disaster-recovery config '{response['resourceUUID']}'.")
     return dr_config_uuid
 
 
