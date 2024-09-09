@@ -257,6 +257,28 @@ def _create_dr_config(
     ).json()
 
 
+def _delete_xcluster_dr_config(
+    customer_uuid: str, dr_config_uuid: str, is_force_delete=False
+):
+    """
+    Deletes an existing xCluster DR config.
+
+    See also:
+     - https://api-docs.yugabyte.com/docs/yugabyte-platform/branches/2.20/defcf45434fc0-delete-xcluster-config
+     - https://api-docs.yugabyte.com/docs/yugabyte-platform/64d854c13e51b-ybp-task
+
+    :param customer_uuid: str - the Customer UUID
+    :param dr_config_uuid:  str - the DR config UUID to return
+    :param is_force_delete: bool - whether to force delete the DR config; default False
+    :return: json of YBPTask (it may be passed to wait_for_task)
+    """
+    return requests.delete(
+        url=f"{auth_config['YBA_URL']}/api/v1/customers/{customer_uuid}/dr_configs/{dr_config_uuid}"
+        f"?isForceDelete={json.dumps(is_force_delete)}",
+        headers=auth_config["API_HEADERS"],
+    ).json()
+
+
 def _set_tables_in_dr_config(
     customer_uuid: str,
     dr_config_uuid: str,

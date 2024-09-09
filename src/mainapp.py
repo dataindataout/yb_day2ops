@@ -16,6 +16,7 @@ from includes.overrides import suppress_warnings
 
 from xclusterdr.manage_dr_cluster import (
     create_xcluster_dr,
+    delete_xcluster_dr,
     get_xcluster_dr_available_tables,
     add_tables_to_xcluster_dr,
     pause_xcluster,
@@ -129,6 +130,23 @@ def create_xluster_dr_configuration(
         xcluster_target_name,
         replicate_database_names,
         shared_backup_location,
+    )
+
+
+@app.command("remove-dr", rich_help_panel="xCluster DR Replication Setup")
+def create_xluster_dr_configuration(
+    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    universe_name: Annotated[
+        str,
+        typer.Option(prompt="Please provide the name of the universe"),
+    ],
+):
+    """
+    Remove an xCluster DR configuration
+    """
+    delete_xcluster_dr(
+        customer_uuid,
+        universe_name,
     )
 
 
