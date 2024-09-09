@@ -150,7 +150,7 @@ def get_xcluster_details_by_name(customer_uuid: str, universe_name: str) -> str:
             )["name"]
 
             print(
-                f"This universe is a source, and the target universe is: {target_name_in_this_xcluster_config}"
+                f"{universe_name} universe is a source, and the target universe is: {target_name_in_this_xcluster_config}"
             )
 
         elif len(target_config_UUID) > 0:
@@ -164,7 +164,7 @@ def get_xcluster_details_by_name(customer_uuid: str, universe_name: str) -> str:
             )["name"]
 
             print(
-                f"This universe is a target, and the source universe is: {source_name_in_this_xcluster_config}"
+                f"{universe_name} universe is a target, and the source universe is: {source_name_in_this_xcluster_config}"
             )
 
         else:

@@ -77,11 +77,14 @@ python src/mainapp.py setup-dr --help
 
 ### Configuration options
 
-The tool currently requires using the configuration files in the `config/` directory. The following describes the contents of the various files in that directory:
+Parameter values can be designated in one of three ways. The values will be read in this order:
+- Command-line flags (use the --help option to see the parameter names)
+- Configuration files as listed below
+- Interactive input (the program will request info missing from flags and files)
 
-`auth.yaml` Contains the API key generated within the YBA UI platform, as well as the YBA URL. The APIs are run against that platform; hence the need for the URL.
+`config/auth.yaml` Contains the API key generated within the YBA UI platform, as well as the YBA URL. The APIs are run against that platform; hence the need for the URL.
 
-`universe.yaml` Contains the user-friendly names of the source and target universes to be controlled via this CLI app, as well as the databases to be set up with DR and the backup location for the initial backup/restore from the source to the target.
+`config/universe.yaml` Contains the user-friendly names of the source and target universes to be controlled via this CLI app, as well as the databases to be set up with DR and the backup location for the initial backup/restore from the source to the target.
 
 ### Command-specific notes
 
@@ -90,10 +93,20 @@ Any of the following commands can be issued via this tool, or via the YBA platfo
 #### xCluster DR setup
 
 ##### setup-dr                  
-Create an xCluster DR configuration. Update `config/universe.yaml` and `config/auth.yaml` with the related platform, universe, database, and backup location values.
+Create an xCluster DR configuration. 
+
+Example:
+```
+python src/mainapp.py setup-dr --xcluster-source-name source-universe-name --xcluster-target-name target-universe-name --replicate-database-names database1,database2 --shared-backup-location name-of-configured-backup-location
+```
 
 ##### get-dr-config             
 Show existing xCluster DR configuration info for the source universe. 
+
+Example:
+```
+python src/mainapp.py get-dr-config --xcluster-source-name source-universe-name
+```
 
 By default, this will show all of the xCluster DR settings in json. You can use the `--key` option to show the value for any key in that larger json. Following are some useful keys:
 
@@ -108,37 +121,75 @@ See also the `obs-status` command.
 #### xCluster DR management
 
 ##### do-pause-xcluster         
-Pause the running xCluster DR replication. Verify with `get-dr-config --key paused`. If successful, this value will be `True`.
+Pause the running xCluster DR replication. 
+
+Example:
+```
+python src/mainapp.py do-pause-xcluster --xcluster-source-name vparham-dr-left
+```
+
+The verification (True or False) will display at the end of this command output.
 
 ##### do-resume-xcluster        
-Resume the running xCluster DR replication. Verify with `get-dr-config --key paused`. If successful, this value will be `False`.
+Resume the running xCluster DR replication. 
+
+Example:
+```
+python src/mainapp.py do-resume-xcluster --xcluster-source-name vparham-dr-left
+```
+
+The verification (True or False) will display at the end of this command output.
 
 ##### do-switchover             
 Switchover the running xcluster replication. A switchover is done gracefully. For example, use switchover when you want to do planned maintenance on universe nodes. The switchover process ensures the active connections are drained, replication is completed, etc.
 
 Requires name of current primary for safety (i.e., to protect you from choosing the wrong universe setup). This will be prompted interactively or you can pass in the `--current-primary` flag. Pass the `--force` flag if you want to avoid the verification prompt.
 
+Example:
+```
+python src/mainapp.py do-switchover --current-primary source-universe-name
+```
+
 ##### do-failover               
 Failover the running xcluster replication. A failover is done in an emergency situation. For example, use failover when your primary region has a cloud outage. Failovers are immediate and not graceful.
 
 Requires name of current primary for safety (i.e., to protect you from choosing the wrong universe setup). This will be prompted interactively or you can pass in the `--current-primary` flag. Pass the `--force` flag if you want to avoid the verification prompt.
+
+Example:
+```
+python src/mainapp.py do-failover --current-primary source-universe-name
+```
 
 ##### do-recovery
 After a failover has been issued, xcluster DR replication between the separate universes is no longer running. (Remember, the reason you did a failover is that the original primary region has failed.) When the region has been restored, you can do a recovery. This will bootstrap the current primary back to the old primary and restart replication. If you want to then have the original primary as the current primary, issue a switchover after recovery is complete.
 
 Requires name of current primary for safety (i.e., to protect you from choosing the wrong universe setup). This will be prompted interactively or you can pass in the `--current-primary` flag. Pass the `--force` flag if you want to avoid the verification prompt.
 
+Example:
+```
+python src/mainapp.py do-recovery --current-primary source-universe-name
+```
+
 #### xCluster DR table management
 
 ##### get-unreplicated-tables   
-Show tables that have not been added to the xCluster DR replication. You can then add these tables via the `do-add-tables-to-dr` function.
+Show tables that have not been added to the xCluster DR replication. 
+
+Example:
+```
+python src/mainapp.py get-unreplicated-tables --xcluster-source-name source-universe-name
+```
+
+You can then add these tables via the `do-add-tables-to-dr` function.
 
 ##### do-add-tables-to-dr
 Add specified unreplicated table to the xCluster DR configuration. 
 
 Before adding tables to the DR config, be sure that (a) the table definition has been created on both the primary and replica, and (b) the tables are empty. If the table definition is not created on both sides, the process will fail. If the tables are not empty, the entire database/keyspace holding those tables will be bootstrapped, and this can take some time.
 
-Pass comma-delimited table IDs found in `get-unreplicated-tables`. All tables in a given database/keyspace must be added at once. For example:
+Pass comma-delimited table IDs found in `get-unreplicated-tables`. All tables in a given database/keyspace must be added at once. 
+
+Example:
 ```
 python src/mainapp.py do-add-tables-to-dr --add-table-ids "00004702000030008000000000004003,00004702000030008000000000004000"
 ```
@@ -154,11 +205,21 @@ Displays the following metrics:
 - safetime skew
 - estimated amount of potential data loss on *failover* (remember failover is urgent, unlike the graceful switchover)
 
+Example:
+```
+python src/mainapp.py obs-latency --xcluster-source-name source-universe-name
+```
+
 See https://docs.yugabyte.com/v2.20/yugabyte-platform/back-up-restore-universes/disaster-recovery/disaster-recovery-setup/#metrics for detailed definitions of these metrics.
 
 ##### obs-status
 
 Displays the state (configuration), status (replication), primaryUniverseState (source), drReplicaUniverseState (target), and paused values from the xcluster DR config, along with the appropriate definitions. See config/status.yaml for all definitions.
+
+Example:
+```
+python src/mainapp.py obs-status --xcluster-source-name source-universe-name
+```
 
 Notes:
 1. The replication state, status, etc. (in particular status="Running" doesn't change if the replication is paused).
@@ -167,7 +228,10 @@ Notes:
 ##### obs-xcluster
 Given a universe name, determine if it is a source, target, or neither. If it is a source, show the target universe name. If it is a target, show the source universe name.
 
-Use the `--universe-name` flag to bypass providing this value interactively.
+Example:
+```
+python src/mainapp.py obs-xcluster --xcluster-source-name source-universe-name
+```
 
 ## Roadmap
 
@@ -177,14 +241,14 @@ See closed pull requests for more detail on completed items.
 
 ### General 
 - [x] Initial framework
-- [ ] Flag for interactive mode (default non-interactive mode)
+- [x] Flag for interactive mode (default non-interactive mode)
 - [ ] Short flag names
 - [ ] Human-readable error handling for interactive mode
 - [ ] Return 0 on successful completion; non-zero on failure for non-interactive mode
-- [ ] All parameters have default values
+- [x] All parameters have default values
 - [ ] Flag to redirect output to a log file / general logging 
 - [x] Add backup location to configuration 
-- [ ] Add example syntax to all commands
+- [x] Add example syntax to all commands
 - [ ] Refactor functions to use dynamic source detection instead of configured value
 
 ### xCluster DR
@@ -195,12 +259,11 @@ See closed pull requests for more detail on completed items.
 - [x] Switchover (graceful) replication between universes in xCluster DR config
 - [x] Failover (immediate) replication between universes in xCluster DR config
 - [x] Recover replication between universes after failover
-- [ ] Remove replication between universes
+- [x] Remove replication between universes
 - [x] Observability: safetime lag
 - [x] Observability: status (paused/running and status)
 - [x] Observability: current primary
 - [ ] Replication lag every x (configurable) seconds
-- [ ] View replicated tables
 - [ ] Remove tables from replication
 - [ ] Resync database 
 
