@@ -27,6 +27,7 @@ Use common sense and good development practices when testing and preparing to ru
             - [obs-latency](#obs-latency)
             - [obs-status](#obs-status)
             - [obs-xcluster](#obs-xcluster)
+- [Testing](#testing)
 - [Roadmap](#roadmap)
 
 ## Notes on using this for xCluster DR
@@ -232,6 +233,19 @@ Example:
 ```
 python src/mainapp.py obs-xcluster --xcluster-source-name source-universe-name
 ```
+
+## Testing
+
+You can use `pytest` to execute the provided tests (test_ files). 
+
+### test cluster configuration
+
+You will likely want to use test universes to run tests, not your production universes. Provide a customer ID (unique to a YBA instance) and universe information in the config/testing.yaml file.
+
+### pytest configuration
+
+The configuration for pytest itself is in pytest.ini. 
+
 
 ## Roadmap
 
