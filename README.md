@@ -21,7 +21,7 @@ Use common sense and good development practices when testing and preparing to ru
             - [do-failover](#do-failover)
             - [do-recovery](#do-recovery)
         - [xCluster DR table management](#xcluster-dr-table-management)
-            - [get-unreplicated-tables](#get-unreplicated-tables)
+            - [get-tables](#get-tables)
             - [do-add-tables-to-dr](#do-add-tables-to-dr)
         - [xCluster DR observability](#xcluster-dr-observability)
             - [obs-latency](#obs-latency)
@@ -173,12 +173,16 @@ python src/mainapp.py do-recovery --current-primary source-universe-name
 
 #### xCluster DR table management
 
-##### get-unreplicated-tables   
-Show tables that have not been added to the xCluster DR replication. 
+##### get-tables   
+Show tables eligible for xCluster DR replication management.
+
+Colocated tables are not eligible for xCluster DR replication, and index tables are included automatically in replication with their parent table.
+
+This display includes output showing which tables are in the xCluster DR replication already.
 
 Example:
 ```
-python src/mainapp.py get-unreplicated-tables --xcluster-source-name source-universe-name
+python src/mainapp.py get-tables --xcluster-source-name source-universe-name
 ```
 
 You can then add these tables via the `do-add-tables-to-dr` function.
@@ -188,7 +192,7 @@ Add specified unreplicated table to the xCluster DR configuration.
 
 Before adding tables to the DR config, be sure that (a) the table definition has been created on both the primary and replica, and (b) the tables are empty. If the table definition is not created on both sides, the process will fail. If the tables are not empty, the entire database/keyspace holding those tables will be bootstrapped, and this can take some time.
 
-Pass comma-delimited table IDs found in `get-unreplicated-tables`. All tables in a given database/keyspace must be added at once. 
+Pass comma-delimited table IDs found in `get-tables`. All tables in a given database/keyspace must be added at once. 
 
 Example:
 ```
@@ -268,7 +272,7 @@ See closed pull requests for more detail on completed items.
 ### xCluster DR
 - [x] Establish replication between universes
 - [x] View and add unreplicated tables
-- [ ] View replicated tables
+- [x] View replicated tables
 - [x] Pause and resume replication
 - [x] Switchover (graceful) replication between universes in xCluster DR config
 - [x] Failover (immediate) replication between universes in xCluster DR config
