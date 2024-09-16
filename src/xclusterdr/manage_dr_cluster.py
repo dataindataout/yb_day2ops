@@ -20,11 +20,9 @@ from core.manage_tasks import wait_for_task
 from xclusterdr.common import get_source_xcluster_dr_config
 
 
-def get_xcluster_dr_available_tables(
-    customer_uuid: str, source_universe_name: str
-) -> list:
+def get_xcluster_tables(customer_uuid: str, source_universe_name: str) -> list:
     """
-    For a given universe name, returns a list of database tables not already included in the current xcluster dr config. These are the tables that can be added to the configuration. Ideally, these should have sizeBytes = 0 or it will trigger a full backup/restore of the existing database (this will slow the process down).
+    For a given universe name, returns a list of database tables included or not included in the current xcluster dr config. An indicator shows the tables that can be added to the configuration. Ideally, the tables added should have sizeBytes = 0 or it will trigger a full backup/restore of the existing database (this will slow the process down).
 
     :param customer_uuid: str - the customer uuid.
     :param universe_name: str - the name of the universe.
@@ -32,32 +30,30 @@ def get_xcluster_dr_available_tables(
     """
     universe_uuid = get_universe_uuid_by_name(customer_uuid, source_universe_name)
 
-    all_tables_list = _get_all_ysql_tables_list(customer_uuid, universe_uuid)
+    all_tables_list = sorted(
+        _get_all_ysql_tables_list(customer_uuid, universe_uuid),
+        key=lambda t: (t["keySpace"], t["tableName"]),
+    )
 
     xcluster_dr_existing_tables_id = get_source_xcluster_dr_config(
         customer_uuid, source_universe_name, "tables"
     )
 
-    # filter out any tables whose ids are not already in the current xcluster dr config
-    # additionally filter out index tables,
-    # which do not need to be added separately from their enclosing table
-    unreplicated_tables_list = [
-        t
-        for t in all_tables_list
-        if t["tableID"] not in xcluster_dr_existing_tables_id
-        and t["isIndexTable"] is not True
-    ]
-
-    formatted_unreplicated_tables_list = []
-    for i in unreplicated_tables_list:
-        new_row = [
-            i["tableID"],
-            i["pgSchemaName"],
-            i["keySpace"],
-            i["tableName"],
-            i["sizeBytes"],
-        ]
-        formatted_unreplicated_tables_list.append(new_row)
+    formatted_tables_list = []
+    for table in all_tables_list:
+        if not table["isIndexTable"]:
+            replicated = (
+                "Yes" if table["tableID"] in xcluster_dr_existing_tables_id else ""
+            )
+            new_row = [
+                replicated,
+                table["pgSchemaName"],
+                table["keySpace"],
+                table["tableName"],
+                table["sizeBytes"],
+                table["tableID"],
+            ]
+            formatted_tables_list.append(new_row)
 
     print(
         "You can use the do-add-tables-to-dr command to add these to the xCluster DR configuration by table id."
@@ -72,8 +68,8 @@ def get_xcluster_dr_available_tables(
     )
 
     return tabulate.tabulate(
-        formatted_unreplicated_tables_list,
-        headers=("id", "schema", "keyspace", "table", "size (bytes)"),
+        formatted_tables_list,
+        headers=("replicated?", "schema", "keyspace", "table", "size (bytes)", "id"),
         tablefmt="rounded_grid",
         floatfmt=".0f",
         showindex=False,

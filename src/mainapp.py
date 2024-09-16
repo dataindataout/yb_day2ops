@@ -18,7 +18,7 @@ from includes.overrides import suppress_warnings
 from xclusterdr.manage_dr_cluster import (
     create_xcluster_dr,
     delete_xcluster_dr,
-    get_xcluster_dr_available_tables,
+    get_xcluster_tables,
     add_tables_to_xcluster_dr,
     pause_xcluster,
     resume_xcluster,
@@ -281,7 +281,7 @@ def do_recovery(
 
 
 @app.command(
-    "get-unreplicated-tables",
+    "get-tables",
     rich_help_panel="xCluster DR Replication Table Management",
 )
 def get_xcluster_dr_unreplicated_tables(
@@ -291,9 +291,9 @@ def get_xcluster_dr_unreplicated_tables(
     ],
 ):
     """
-    Show tables that have not been added to the xCluster DR replication
+    Show tables eligible for xCluster DR replication management
     """
-    print(get_xcluster_dr_available_tables(customer_uuid, xcluster_source_name))
+    print(get_xcluster_tables(customer_uuid, xcluster_source_name))
 
 
 @app.command(
