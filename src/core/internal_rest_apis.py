@@ -38,6 +38,22 @@ def _get_universe_by_uuid(customer_uuid: str, universe_uuid: str):
     ).json()
 
 
+def _get_region_metadata(customer_uuid: str, code: str):
+    """
+    Basic function that returns region metadata using its code (example code: us-central1).
+
+    One use of this data is to show the longitude and latitude of a region. (This is only available in our metadata at least, at the granularity of the region, not availability zone.)
+
+    See also:
+    - https://api-docs.yugabyte.com/docs/yugabyte-platform/9b4dd14021261-retrieves-the-region-metadata-for-the-cloud-providers
+    """
+
+    return requests.get(
+        url=f"{auth_config['YBA_URL']}/api/v1/customers/{customer_uuid}/providers/region_metadata/{code}",
+        headers=auth_config["API_HEADERS"],
+    ).json()
+
+
 def _get_database_namespaces(
     customer_uuid: str,
     universe_uuid: str,
