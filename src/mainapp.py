@@ -34,6 +34,8 @@ from xclusterdr.observability import (
     get_xcluster_details_by_name,
 )
 
+from healthcheck.map import get_diagram_map
+
 suppress_warnings()
 
 app = typer.Typer(no_args_is_help=True, rich_markup_mode="rich", add_completion=False)
@@ -361,6 +363,20 @@ def get_xcluster_details_by_universe_name(
     Show existing xCluster DR configuration info for a given universe
     """
     return get_xcluster_details_by_name(customer_uuid, universe_name)
+
+
+## app commands: healthcheck
+
+
+@app.command("diagram", rich_help_panel="Healthcheck")
+def show_diagram(
+    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    universe_name: Annotated[str, typer.Option(envvar="UNIVERSE", prompt=True)],
+):
+    """
+    Create network diagram for provided universe name
+    """
+    return get_diagram_map(customer_uuid, universe_name)
 
 
 ## the app callback
