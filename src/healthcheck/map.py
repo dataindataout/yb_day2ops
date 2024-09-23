@@ -142,15 +142,16 @@ def get_diagram_map(customer_uuid: str, universe_name: str):
     file_time = current_time.strftime("%Y%m%d_%H:%M:%S")
 
     ## save the full node details to a file
-    file_name = f"/tmp/{universe_name}-{file_time}"
+    details_file_name = f"/tmp/{universe_name}-{file_time}"
 
-    with open(file_name, "w") as file:
+    with open(details_file_name, "w") as file:
         file.write(json.dumps(universe_info, indent=4))
-    print(f"Contents written to {file_name}")
+    print(f"Universe details written to {details_file_name}")
 
     ## save the mapbox as an html file
-    fig.write_html(f"/tmp/{universe_name}-{file_time}.html")
-    print(f"plot saved to {universe_name}-{file_time}.html")
+    html_file_name = f"/tmp/{universe_name}-{file_time}.html"
+    fig.write_html(html_file_name)
+    print(f"Network diagram saved to {html_file_name}")
 
     ## alternatively immediately open figure in the default browser
     # fig.show()
