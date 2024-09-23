@@ -14,6 +14,7 @@ from core.internal_rest_apis import (
 from core.get_universe_info import get_universe_uuid_by_name
 
 from includes.overrides import suppress_warnings
+from includes.validation import command_confirmed
 
 from xclusterdr.manage_dr_cluster import (
     create_xcluster_dr,
@@ -101,32 +102,43 @@ def create_xluster_dr_configuration(
     shared_backup_location: Annotated[
         str, typer.Option(envvar="SHARED_BACKUP_LOCATION", prompt=True)
     ],
+    force: Annotated[bool, typer.Option("--force")] = False,
 ):
     """
     Create an xCluster DR configuration
     """
+    confirmation_text = f"You are about to set up xCluster DR async replication of the database(s) {replicate_database_names} between the source universe {xcluster_source_name} and the target universe {xcluster_target_name}. The backup storage you'll use for the initial bootstrapping is {shared_backup_location}. Is this what you want to do?"
 
-    create_xcluster_dr(
-        customer_uuid,
-        xcluster_source_name,
-        xcluster_target_name,
-        replicate_database_names,
-        shared_backup_location,
-    )
+    if force or command_confirmed(confirmation_text):
+        create_xcluster_dr(
+            customer_uuid,
+            xcluster_source_name,
+            xcluster_target_name,
+            replicate_database_names,
+            shared_backup_location,
+        )
+    else:
+        print(f"OK. Command cancelled.")
 
 
 @app.command("remove-dr", rich_help_panel="xCluster DR Replication Setup")
 def create_xluster_dr_configuration(
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
     universe_name: Annotated[str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)],
+    force: Annotated[bool, typer.Option("--force")] = False,
 ):
     """
     Remove an xCluster DR configuration
     """
-    delete_xcluster_dr(
-        customer_uuid,
-        universe_name,
-    )
+    confirmation_text = f"You are about to remove the xCluster DR async replication between {universe_name} and its target. If you want to set it back up, you will need to re-bootstrap the data. Is this what you want to do?"
+
+    if force or command_confirmed(confirmation_text):
+        delete_xcluster_dr(
+            customer_uuid,
+            universe_name,
+        )
+    else:
+        print(f"OK. Command cancelled.")
 
 
 @app.command("get-dr-config", rich_help_panel="xCluster DR Replication Setup")
@@ -153,46 +165,40 @@ def get_xcluster_configuration_info(
 
 @app.command("do-pause-xcluster", rich_help_panel="xCluster DR Replication Management")
 def do_pause_xcluster(
-    force: Annotated[
-        bool,
-        typer.Option(
-            prompt="Are you sure you want to pause the replication for these clusters?"
-        ),
-    ],
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
     xcluster_source_name: Annotated[
         str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
     ],
+    force: Annotated[bool, typer.Option("--force")] = False,
 ):
     """
     Pause the running xCluster DR replication
     """
-    if force:
+    confirmation_text = f"You are about to pause the xCluster DR async replication between the source universe {xcluster_source_name} and its target universe. Is this what you want to do?"
+
+    if force or command_confirmed(confirmation_text):
         return pause_xcluster(customer_uuid, xcluster_source_name)
     else:
-        print("Operation cancelled")
+        print(f"OK. Command cancelled.")
 
 
 @app.command("do-resume-xcluster", rich_help_panel="xCluster DR Replication Management")
 def do_resume_xcluster(
-    force: Annotated[
-        bool,
-        typer.Option(
-            prompt="Are you sure you want to resume the replication for these clusters?"
-        ),
-    ],
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
     xcluster_source_name: Annotated[
         str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
     ],
+    force: Annotated[bool, typer.Option("--force")] = False,
 ):
     """
     Resume the active xCluster DR replication
     """
-    if force:
+    confirmation_text = f"You are about to resume the xCluster DR async replication between the source universe {xcluster_source_name} and its target universe. Is this what you want to do?"
+
+    if force or command_confirmed(confirmation_text):
         return resume_xcluster(customer_uuid, xcluster_source_name)
     else:
-        print("Operation cancelled")
+        print(f"OK. Command cancelled.")
 
 
 @app.command("do-switchover", rich_help_panel="xCluster DR Replication Management")
@@ -203,24 +209,21 @@ def do_switchover(
             prompt="Please provide the name of the current source universe for verification"
         ),
     ],
-    force: Annotated[
-        bool,
-        typer.Option(
-            prompt="You are about to perform a switchover of this xCluster setup. Please confirm. "
-        ),
-    ],
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    force: Annotated[bool, typer.Option("--force")] = False,
 ):
     """
     Switchover the running xCluster DR replication
     """
-    if force:
+    confirmation_text = f"You are about to do a switchover of the xCluster DR async replication between the source universe {current_primary} and its target universe. Is this what you want to do?"
+
+    if force or command_confirmed(confirmation_text):
         try:
             return perform_xcluster_dr_switchover(customer_uuid, current_primary)
         except RuntimeError as e:
             print(f"There was a RuntimeError: {e}")
     else:
-        print("Operation cancelled")
+        print(f"OK. Command cancelled.")
 
 
 @app.command("do-failover", rich_help_panel="xCluster DR Replication Management")
@@ -231,24 +234,21 @@ def do_failover(
             prompt="Please provide the name of the current primary for verification"
         ),
     ],
-    force: Annotated[
-        bool,
-        typer.Option(
-            prompt="You are about to perform an emergency failover to the replica cluster. XCLUSTER REPLICATION BETWEEN PRIMARY AND REPLICA UNIVERSES WILL BE STOPPED AFTER THIS UNTIL YOU RECOVER IT. Please confirm. "
-        ),
-    ],
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    force: Annotated[bool, typer.Option("--force")] = False,
 ):
     """
     Failover (immediately, non-gracefully) the running xCluster DR replication
     """
-    if force:
+    confirmation_text = f"You are about to do an emergency failover of the xCluster DR async replication between the source universe {current_primary} and its target universe. You will need to run a recovery in order to re-establish DR, and this will probably require a re-bootstrap of all data. Is this what you want to do?"
+
+    if force or command_confirmed(confirmation_text):
         try:
             return perform_xcluster_dr_failover(customer_uuid, current_primary)
         except RuntimeError as e:
             print(f"There was a RuntimeError: {e}")
     else:
-        print("Operation cancelled")
+        print(f"OK. Command cancelled.")
 
 
 @app.command("do-recovery", rich_help_panel="xCluster DR Replication Management")
@@ -259,24 +259,21 @@ def do_recovery(
             prompt="Please provide the name of the current primary for verification"
         ),
     ],
-    force: Annotated[
-        bool,
-        typer.Option(
-            prompt="You are about to perform a recovery on xCluster DR replication previously failed over. This will restore the replication stream. Please confirm. "
-        ),
-    ],
     customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    force: Annotated[bool, typer.Option("--force")] = False,
 ):
     """
     Recovery restores replication that previously had a non-graceful failover
     """
-    if force:
+    confirmation_text = f"You are about to do a recovery of the xCluster DR async replication between the source universe {current_primary} and its target universe. This will probably require a re-bootstrap of all data. Is this what you want to do?"
+
+    if force or command_confirmed(confirmation_text):
         try:
             return perform_xcluster_dr_recovery(customer_uuid, current_primary)
         except RuntimeError as e:
             print(f"There was a RuntimeError: {e}")
     else:
-        print("Operation cancelled")
+        print(f"OK. Command cancelled.")
 
 
 ## app commands: xCluster DR replication table management
@@ -291,11 +288,17 @@ def get_xcluster_dr_unreplicated_tables(
     xcluster_source_name: Annotated[
         str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
     ],
+    force: Annotated[bool, typer.Option("--force")] = False,
 ):
     """
     Show tables eligible for xCluster DR replication management
     """
-    print(get_xcluster_tables(customer_uuid, xcluster_source_name))
+    confirmation_text = f"This will show the list of tables on the source universe {xcluster_source_name}, both replicated and unreplicated. You can add tables using the do-add-tables-to-dr command. OK?"
+
+    if force or command_confirmed(confirmation_text):
+        print(get_xcluster_tables(customer_uuid, xcluster_source_name))
+    else:
+        print(f"OK. Command cancelled.")
 
 
 @app.command(
@@ -313,16 +316,22 @@ def do_add_tables_to_dr(
             callback=parse_comma_separated_list,
         ),
     ],
+    force: Annotated[bool, typer.Option("--force")] = False,
 ):
     """
     Add specified unreplicated table to the xCluster DR configuration
     """
-    if add_table_ids:
-        return add_tables_to_xcluster_dr(
-            customer_uuid, xcluster_source_name, add_table_ids
-        )
+    confirmation_text = f"You are about to add the tables {add_table_ids} to the xCluster DR async replication stream between the source universe {xcluster_source_name} and its target universe. Is this what you want to do?"
+
+    if force or command_confirmed(confirmation_text):
+        if add_table_ids:
+            return add_tables_to_xcluster_dr(
+                customer_uuid, xcluster_source_name, add_table_ids
+            )
+        else:
+            print("Please provide table IDs. Command cancelled.")
     else:
-        print("Please provide table IDs. Operation cancelled.")
+        print(f"OK. Command cancelled.")
 
 
 ## app commands: xCluster DR observability
