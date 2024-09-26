@@ -2,9 +2,8 @@ import os
 import yaml
 
 import typer
-from typing import List
+from typing import List, Optional
 
-from pathlib import Path
 from pprint import pprint
 from typing_extensions import Annotated
 
@@ -13,6 +12,7 @@ from core.internal_rest_apis import (
 )
 from core.get_universe_info import get_universe_uuid_by_name
 
+from includes.get_demo_config import get_config
 from includes.overrides import suppress_warnings
 from includes.validation import command_confirmed
 
@@ -39,16 +39,12 @@ from healthcheck.map import get_diagram_map
 
 suppress_warnings()
 
-app = typer.Typer(no_args_is_help=True, rich_markup_mode="rich", add_completion=False)
+app = typer.Typer(
+    no_args_is_help=True,
+    rich_markup_mode="rich",
+    add_completion=False,
+)
 state = {"verbose": False}
-
-# get universe config values
-demo_config_file = Path("config/universe.yaml")
-demo_config_data = yaml.safe_load(demo_config_file.read_text())
-
-if demo_config_data:
-    for key, value in demo_config_data.items():
-        os.environ[key] = str(value)
 
 
 # get auth config values
@@ -89,7 +85,9 @@ def parse_comma_separated_list(value: str) -> List[str]:
 
 @app.command("setup-dr", rich_help_panel="xCluster DR Replication Setup")
 def create_xluster_dr_configuration(
-    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    customer_uuid: Annotated[
+        str, typer.Argument(default_factory=get_customer_uuid, hidden=True)
+    ],
     xcluster_source_name: Annotated[
         str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
     ],
@@ -123,7 +121,9 @@ def create_xluster_dr_configuration(
 
 @app.command("remove-dr", rich_help_panel="xCluster DR Replication Setup")
 def create_xluster_dr_configuration(
-    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    customer_uuid: Annotated[
+        str, typer.Argument(default_factory=get_customer_uuid, hidden=True)
+    ],
     universe_name: Annotated[str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)],
     force: Annotated[bool, typer.Option("--force")] = False,
 ):
@@ -143,7 +143,9 @@ def create_xluster_dr_configuration(
 
 @app.command("get-dr-config", rich_help_panel="xCluster DR Replication Setup")
 def get_xcluster_configuration_info(
-    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    customer_uuid: Annotated[
+        str, typer.Argument(default_factory=get_customer_uuid, hidden=True)
+    ],
     xcluster_source_name: Annotated[
         str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
     ],
@@ -165,7 +167,9 @@ def get_xcluster_configuration_info(
 
 @app.command("do-pause-xcluster", rich_help_panel="xCluster DR Replication Management")
 def do_pause_xcluster(
-    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    customer_uuid: Annotated[
+        str, typer.Argument(default_factory=get_customer_uuid, hidden=True)
+    ],
     xcluster_source_name: Annotated[
         str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
     ],
@@ -184,7 +188,9 @@ def do_pause_xcluster(
 
 @app.command("do-resume-xcluster", rich_help_panel="xCluster DR Replication Management")
 def do_resume_xcluster(
-    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    customer_uuid: Annotated[
+        str, typer.Argument(default_factory=get_customer_uuid, hidden=True)
+    ],
     xcluster_source_name: Annotated[
         str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
     ],
@@ -209,7 +215,9 @@ def do_switchover(
             prompt="Please provide the name of the current source universe for verification"
         ),
     ],
-    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    customer_uuid: Annotated[
+        str, typer.Argument(default_factory=get_customer_uuid, hidden=True)
+    ],
     force: Annotated[bool, typer.Option("--force")] = False,
 ):
     """
@@ -234,7 +242,9 @@ def do_failover(
             prompt="Please provide the name of the current primary for verification"
         ),
     ],
-    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    customer_uuid: Annotated[
+        str, typer.Argument(default_factory=get_customer_uuid, hidden=True)
+    ],
     force: Annotated[bool, typer.Option("--force")] = False,
 ):
     """
@@ -259,7 +269,9 @@ def do_recovery(
             prompt="Please provide the name of the current primary for verification"
         ),
     ],
-    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    customer_uuid: Annotated[
+        str, typer.Argument(default_factory=get_customer_uuid, hidden=True)
+    ],
     force: Annotated[bool, typer.Option("--force")] = False,
 ):
     """
@@ -284,7 +296,9 @@ def do_recovery(
     rich_help_panel="xCluster DR Replication Table Management",
 )
 def get_xcluster_dr_unreplicated_tables(
-    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    customer_uuid: Annotated[
+        str, typer.Argument(default_factory=get_customer_uuid, hidden=True)
+    ],
     xcluster_source_name: Annotated[
         str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
     ],
@@ -305,7 +319,9 @@ def get_xcluster_dr_unreplicated_tables(
     "do-add-tables-to-dr", rich_help_panel="xCluster DR Replication Table Management"
 )
 def do_add_tables_to_dr(
-    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    customer_uuid: Annotated[
+        str, typer.Argument(default_factory=get_customer_uuid, hidden=True)
+    ],
     xcluster_source_name: Annotated[
         str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
     ],
@@ -339,7 +355,9 @@ def do_add_tables_to_dr(
 
 @app.command("obs-latency", rich_help_panel="xCluster DR Replication Observability")
 def get_observability_safetime_lag(
-    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    customer_uuid: Annotated[
+        str, typer.Argument(default_factory=get_customer_uuid, hidden=True)
+    ],
     xcluster_source_name: Annotated[
         str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
     ],
@@ -352,7 +370,9 @@ def get_observability_safetime_lag(
 
 @app.command("obs-status", rich_help_panel="xCluster DR Replication Observability")
 def get_observability_status(
-    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    customer_uuid: Annotated[
+        str, typer.Argument(default_factory=get_customer_uuid, hidden=True)
+    ],
     xcluster_source_name: Annotated[
         str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
     ],
@@ -365,7 +385,9 @@ def get_observability_status(
 
 @app.command("obs-xcluster", rich_help_panel="xCluster DR Replication Observability")
 def get_xcluster_details_by_universe_name(
-    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    customer_uuid: Annotated[
+        str, typer.Argument(default_factory=get_customer_uuid, hidden=True)
+    ],
     universe_name: Annotated[str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)],
 ):
     """
@@ -379,7 +401,9 @@ def get_xcluster_details_by_universe_name(
 
 @app.command("diagram", rich_help_panel="Healthcheck")
 def show_diagram(
-    customer_uuid: Annotated[str, typer.Argument(default_factory=get_customer_uuid)],
+    customer_uuid: Annotated[
+        str, typer.Argument(default_factory=get_customer_uuid, hidden=True)
+    ],
     universe_name: Annotated[str, typer.Option(envvar="UNIVERSE", prompt=True)],
 ):
     """
@@ -392,13 +416,14 @@ def show_diagram(
 
 
 @app.callback()
-def main(verbose: bool = False):
-    """
-    Please update config/auth.yaml and config/universe.yaml with appropriate values for your universe.
-    """
-    if verbose:
-        print("Will write verbose output")
-        state["verbose"] = True
+def main(
+    config: str = typer.Option(
+        None, "--config", "-c", help="Path to the config file (optional)"
+    ),
+):
+    if config:
+        typer.echo(f"Using config file: {config}")
+        get_config(config)
 
 
 if __name__ == "__main__":

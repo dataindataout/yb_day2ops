@@ -27,6 +27,8 @@ Use common sense and good development practices when testing and preparing to ru
             - [obs-latency](#obs-latency)
             - [obs-status](#obs-status)
             - [obs-xcluster](#obs-xcluster)
+        - [Healthcheck](#healthcheck)
+            - [diagram](#diagram)
 - [Testing](#testing)
 - [Roadmap](#roadmap)
 
@@ -59,6 +61,10 @@ This is used to parse yaml configuration files.
 https://github.com/astanin/python-tabulate
 This is used to display results from API calls in a table. It's a nice-to-have, so feel free to rip it out if you don't ever plan to use the app in an interactive fashion.
 
+### Plotly
+https://plotly.com/python/
+This is used to create a network diagram for the health check.
+
 ## Run the CLI app
 
 The CLI app is started by running `python src/mainapp.py`. It is there you can see the available options.
@@ -78,18 +84,35 @@ python src/mainapp.py setup-dr --help
 
 ### Configuration options
 
-Parameter values can be designated in one of three ways. The values will be read in this order:
-- Command-line flags (use the --help option to see the parameter names)
-- Configuration files as listed below
-- Interactive input (the program will request info missing from flags and files)
+The YBA control plane is typically used to manage multiple universes (database clusters). For this reason, a configuration file holding the universe name, etc. can be passed into each command. See the `config/universe_example.yaml` file for an example. This flexibility does not currently change the requirement to have a `config/auth.yaml` file that contains the control plane URL and API key. 
+
+The configuration file option is passed to the main program, not the command. See the following example for order of parameters in a CLI statement. In this example, `--config` is passed to mainapp.py and `--key` is passed to the get-dr-config command.
+
+```
+python src/mainapp.py --config config/universe.yaml get-dr-config --key uuid
+```
+
+In the absence of a configuration file, you can pass options along with the command. Use the `--help` option on any command to see available options. Here is an example, where `source-universe-name` is the name of your universe.
+
+```
+python src/mainapp.py get-dr-config --xcluster-source-name source-universe-name --key uuid
+```
+
+Finally, if you choose not to pass a configuration file or CLI options, or if any required option is missing from either, the program will request values interactively.
+
+For some commands that result in changes to the universes or replication stream, you will see an interactive confirmation. There is helpful information in these confirmations, and it's not recommended that you ignore them, but if your workflow prevents interactivity, you can turn these off with the `--force` option. Here is an example:
+
+```
+python src/mainapp.py do-pause-xcluster --xcluster-source-name source-universe-name --force
+```
+
+As noted, the control plane URL and API key are required in the `config/auth.yaml` configuration file:
 
 `config/auth.yaml` Contains the API key generated within the YBA UI platform, as well as the YBA URL. The APIs are run against that platform; hence the need for the URL.
 
-`config/universe.yaml` Contains the user-friendly names of the source and target universes to be controlled via this CLI app, as well as the databases to be set up with DR and the backup location for the initial backup/restore from the source to the target.
-
 ### Command-specific notes
 
-Any of the following commands can be issued via this tool, or via the YBA platform UI. Changes will be seen in both locations. Task IDs shown in the output of the commands can be tracked in the UI as well under the Tasks tab.
+Any of the following functionality can be achieved via using this tool or via the YBA control plane UI. Any changes issued in either will be seen in both locations. Task IDs shown in the output of the commands can be tracked in the UI as well under the Tasks tab. The examples below assume you are passing options via the CLI command string.
 
 #### xCluster DR setup
 
@@ -102,7 +125,7 @@ python src/mainapp.py setup-dr --xcluster-source-name source-universe-name --xcl
 ```
 
 ##### get-dr-config             
-Show existing xCluster DR configuration info for the source universe. 
+Show existing xCluster DR configuration info for the source universe. Note in this context, "configuration" does not mean the configuration for this application, but rather the aync DR replication configuration.
 
 Example:
 ```
@@ -238,6 +261,13 @@ Example:
 python src/mainapp.py obs-xcluster --xcluster-source-name source-universe-name
 ```
 
+#### Healthcheck
+
+##### diagram
+Creates a diagram of a universe cluster overlaid on a map of Earth, zoomed into the bounding box of the nodes.
+
+Note: This is a work in progress, and does not currently create a diagram for the xCluster DR setup, just a single provided cluster. 
+
 ## Testing
 
 You can use `pytest` to execute the provided tests (test_ files). 
@@ -268,6 +298,8 @@ See closed pull requests for more detail on completed items.
 - [x] Add backup location to configuration 
 - [x] Add example syntax to all commands
 - [ ] Refactor functions to use dynamic source detection instead of configured value
+- [x] Ensure user confirms commands that will change the universe and/or replication streams.
+- [x] Pass in configuration file.
 
 ### xCluster DR
 - [x] Establish replication between universes
