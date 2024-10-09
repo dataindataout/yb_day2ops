@@ -2,7 +2,7 @@ import os
 import yaml
 
 import typer
-from typing import List, Optional
+from typing import List
 
 from pprint import pprint
 from typing_extensions import Annotated
@@ -32,7 +32,7 @@ from xclusterdr.common import get_source_xcluster_dr_config
 from xclusterdr.observability import (
     get_xcluster_dr_safetimes,
     get_status,
-    get_xcluster_details_by_name,
+    get_all_clusters,
 )
 
 from healthcheck.map import get_diagram_map
@@ -384,16 +384,15 @@ def get_observability_status(
 
 
 @app.command("obs-xcluster", rich_help_panel="xCluster DR Replication Observability")
-def get_xcluster_details_by_universe_name(
+def get_all_clusters_for_yba(
     customer_uuid: Annotated[
         str, typer.Argument(default_factory=get_customer_uuid, hidden=True)
     ],
-    universe_name: Annotated[str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)],
 ):
     """
-    Show existing xCluster DR configuration info for a given universe
+    Show info for all universes
     """
-    return get_xcluster_details_by_name(customer_uuid, universe_name)
+    print(get_all_clusters(customer_uuid))
 
 
 ## app commands: healthcheck
