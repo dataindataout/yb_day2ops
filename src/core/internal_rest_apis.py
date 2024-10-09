@@ -486,3 +486,18 @@ def _recover_xcluster_dr_config(
         json=disaster_recovery_restart_form_data,
         headers=auth_config["API_HEADERS"],
     ).json()
+
+
+def _list_all_universes(customer_uuid: str):
+    """
+    Lists all universes in a given YBA platform (for a given customer ID)
+
+    See also:
+     - https://api-docs.yugabyte.com/docs/yugabyte-platform/66e50c174046d-list-universes
+
+    :param customer_uuid: str - the Customer UUID
+    """
+    return requests.get(
+        url=f"{auth_config['YBA_URL']}/api/v1/customers/{customer_uuid}/universes",
+        headers=auth_config["API_HEADERS"],
+    ).json()
