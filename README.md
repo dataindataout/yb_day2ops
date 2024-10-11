@@ -254,11 +254,11 @@ Notes:
 2. The replication state, status, etc. don't change if a universe itself is paused.
 
 ##### obs-xcluster
-Given a universe name, determine if it is a source, target, or neither. If it is a source, show the target universe name. If it is a target, show the source universe name.
+For the currently authenticated YBA instance (customer ID), display a list of xcluster pairs in columns of current source and current target.
 
 Example:
 ```
-python src/mainapp.py obs-xcluster --xcluster-source-name source-universe-name
+python src/mainapp.py obs-xcluster
 ```
 
 #### Healthcheck
@@ -297,9 +297,9 @@ See closed pull requests for more detail on completed items.
 - [ ] Flag to redirect output to a log file / general logging 
 - [x] Add backup location to configuration 
 - [x] Add example syntax to all commands
-- [ ] Refactor functions to use dynamic source detection instead of configured value
+- [x] Refactor functions to require source universe etc. for safety
 - [x] Ensure user confirms commands that will change the universe and/or replication streams.
-- [x] Pass in configuration file.
+- [x] Pass in configuration file
 
 ### xCluster DR
 - [x] Establish replication between universes
@@ -316,6 +316,7 @@ See closed pull requests for more detail on completed items.
 - [ ] Replication lag every x (configurable) seconds
 - [ ] Remove tables from replication
 - [ ] Resync database 
+- [x] Display all xcluster DR pairs for a given YBA instance
 
 ### DDL wrappers
 - [ ] Add table
