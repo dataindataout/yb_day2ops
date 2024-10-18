@@ -14,6 +14,7 @@ Use common sense and good development practices when testing and preparing to ru
         - [xCluster DR setup](#xcluster-dr-setup)
             - [setup-dr](#setup-dr)
             - [get-dr-config](#get-dr-config)
+            - [remove-dr](#remove-dr)
         - [xCluster DR management](#xcluster-dr-management)
             - [do-pause-xcluster](#do-pause-xcluster)
             - [do-resume-xcluster](#do-resume-xcluster)
@@ -141,6 +142,14 @@ By default, this will show all of the xCluster DR settings in json. You can use 
 `--key tableType`: indicates which API is used for these universes (YCQL or YSQL)
 
 See also the `obs-status` command.
+
+##### remove-dr                  
+Remove an xCluster DR configuration. 
+
+Example:
+```
+python src/mainapp.py remove-dr --xcluster-source-name source-universe-name
+```
 
 #### xCluster DR management
 
@@ -300,6 +309,7 @@ See closed pull requests for more detail on completed items.
 - [x] Refactor functions to require source universe etc. for safety
 - [x] Ensure user confirms commands that will change the universe and/or replication streams.
 - [x] Pass in configuration file
+- [ ] Allow for local script managing multiple YBA instances
 
 ### xCluster DR
 - [x] Establish replication between universes

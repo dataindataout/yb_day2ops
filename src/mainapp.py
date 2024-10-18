@@ -84,7 +84,7 @@ def parse_comma_separated_list(value: str) -> List[str]:
 
 
 @app.command("setup-dr", rich_help_panel="xCluster DR Replication Setup")
-def create_xluster_dr_configuration(
+def create_xcluster_dr_configuration(
     customer_uuid: Annotated[
         str, typer.Argument(default_factory=get_customer_uuid, hidden=True)
     ],
@@ -120,22 +120,24 @@ def create_xluster_dr_configuration(
 
 
 @app.command("remove-dr", rich_help_panel="xCluster DR Replication Setup")
-def create_xluster_dr_configuration(
+def remove_xcluster_dr_configuration(
     customer_uuid: Annotated[
         str, typer.Argument(default_factory=get_customer_uuid, hidden=True)
     ],
-    universe_name: Annotated[str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)],
+    xcluster_source_name: Annotated[
+        str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)
+    ],
     force: Annotated[bool, typer.Option("--force")] = False,
 ):
     """
     Remove an xCluster DR configuration
     """
-    confirmation_text = f"You are about to remove the xCluster DR async replication between {universe_name} and its target. If you want to set it back up, you will need to re-bootstrap the data. Is this what you want to do?"
+    confirmation_text = f"You are about to remove the xCluster DR async replication between {xcluster_source_name} and its target. If you want to set it back up, you will need to re-bootstrap the data. Is this what you want to do?"
 
     if force or command_confirmed(confirmation_text):
         delete_xcluster_dr(
             customer_uuid,
-            universe_name,
+            xcluster_source_name,
         )
     else:
         print(f"OK. Command cancelled.")
