@@ -4,6 +4,8 @@ from core.internal_rest_apis import (
     _get_all_ysql_tables_list,
     _get_universe_by_name,
     _get_database_namespaces,
+    _get_xcluster_dr_configs,
+    _get_universe_by_uuid,
     _create_dr_config,
     _delete_xcluster_dr_config,
     _set_tables_in_dr_config,
@@ -307,3 +309,40 @@ def perform_xcluster_dr_recovery(customer_uuid: str, source_universe_name: str) 
 
     resp = _recover_xcluster_dr_config(customer_uuid, dr_config_uuid)
     return wait_for_task(customer_uuid, resp, "Recover XCluster DR")
+
+
+def get_xcluster_details_by_name(customer_uuid: str, universe_name: str) -> str:
+    """
+    Helper function to return the source given any universe name.
+    :param customer_uuid: str - the customer UUID
+    :param universe_name: str - the universe's friendly name
+    :raises RuntimeError: if the universe is not found
+    """
+    universe = next(iter(_get_universe_by_name(customer_uuid, universe_name)), None)
+    if universe is None:
+        raise RuntimeError(
+            f"ERROR: failed to find a universe '{universe_name}' by name"
+        )
+    else:
+        source_config_UUID = universe["drConfigUuidsAsSource"]
+        target_config_UUID = universe["drConfigUuidsAsTarget"]
+        if len(source_config_UUID) > 0:
+            # target_uuid_in_this_xcluster_config = _get_xcluster_dr_configs(
+            #     customer_uuid, source_config_UUID[0]
+            # )["drReplicaUniverseUuid"]
+            # target_name_in_this_xcluster_config = _get_universe_by_uuid(
+            #     customer_uuid, target_uuid_in_this_xcluster_config
+            # )["name"]
+            print(f"{universe_name}")
+        elif len(target_config_UUID) > 0:
+            source_uuid_in_this_xcluster_config = _get_xcluster_dr_configs(
+                customer_uuid, target_config_UUID[0]
+            )["primaryUniverseUuid"]
+            source_name_in_this_xcluster_config = _get_universe_by_uuid(
+                customer_uuid, source_uuid_in_this_xcluster_config
+            )["name"]
+            print(f"{source_name_in_this_xcluster_config}")
+        else:
+            raise RuntimeError(
+                f"ERROR: '{universe_name}' is not configured as part of an xCluster config."
+            )

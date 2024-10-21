@@ -21,6 +21,7 @@ Use common sense and good development practices when testing and preparing to ru
             - [do-switchover](#do-switchover)
             - [do-failover](#do-failover)
             - [do-recovery](#do-recovery)
+            - [get-source](#get-source)
         - [xCluster DR table management](#xcluster-dr-table-management)
             - [get-tables](#get-tables)
             - [do-add-tables-to-dr](#do-add-tables-to-dr)
@@ -203,6 +204,16 @@ Example:
 python src/mainapp.py do-recovery --current-primary source-universe-name
 ```
 
+##### get-source
+Pass either universe name in an xCluster DR configuration to return the source universe name.
+
+The returned text has no surrounding explanatory wording, as the main use is to get the current source universe name for any given pair in an automation flow.
+
+Example:
+```
+python src/mainapp.py get-source --universe-name a-universe-name
+```
+
 #### xCluster DR table management
 
 ##### get-tables   
@@ -310,6 +321,7 @@ See closed pull requests for more detail on completed items.
 - [x] Ensure user confirms commands that will change the universe and/or replication streams.
 - [x] Pass in configuration file
 - [ ] Allow for local script managing multiple YBA instances
+- [x] Get source universe name from either universe name in an xCluster DR configuration
 
 ### xCluster DR
 - [x] Establish replication between universes
