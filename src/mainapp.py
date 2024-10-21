@@ -26,6 +26,7 @@ from xclusterdr.manage_dr_cluster import (
     perform_xcluster_dr_switchover,
     perform_xcluster_dr_failover,
     perform_xcluster_dr_recovery,
+    get_xcluster_details_by_name,
 )
 from xclusterdr.common import get_source_xcluster_dr_config
 
@@ -162,6 +163,19 @@ def get_xcluster_configuration_info(
     Show existing xCluster DR configuration info for the source universe
     """
     pprint(get_source_xcluster_dr_config(customer_uuid, xcluster_source_name, key))
+
+
+@app.command("get-source", rich_help_panel="xCluster DR Replication Setup")
+def get_xcluster_details_by_universe_name(
+    customer_uuid: Annotated[
+        str, typer.Argument(default_factory=get_customer_uuid, hidden=True)
+    ],
+    universe_name: Annotated[str, typer.Option(envvar="XCLUSTER_SOURCE", prompt=True)],
+):
+    """
+    Get source universe name from any universe name
+    """
+    return get_xcluster_details_by_name(customer_uuid, universe_name)
 
 
 ## app commands: xCluster DR replication management
