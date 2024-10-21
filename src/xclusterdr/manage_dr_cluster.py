@@ -327,12 +327,6 @@ def get_xcluster_details_by_name(customer_uuid: str, universe_name: str) -> str:
         source_config_UUID = universe["drConfigUuidsAsSource"]
         target_config_UUID = universe["drConfigUuidsAsTarget"]
         if len(source_config_UUID) > 0:
-            # target_uuid_in_this_xcluster_config = _get_xcluster_dr_configs(
-            #     customer_uuid, source_config_UUID[0]
-            # )["drReplicaUniverseUuid"]
-            # target_name_in_this_xcluster_config = _get_universe_by_uuid(
-            #     customer_uuid, target_uuid_in_this_xcluster_config
-            # )["name"]
             print(f"{universe_name}")
         elif len(target_config_UUID) > 0:
             source_uuid_in_this_xcluster_config = _get_xcluster_dr_configs(
